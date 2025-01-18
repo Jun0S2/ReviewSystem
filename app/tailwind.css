@@ -2,11 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
-html,
-body {
-  @apply bg-white dark:bg-gray-950;
-
-  @media (prefers-color-scheme: dark) {
-    color-scheme: dark;
+/* Add this in your CSS file or use Tailwind's @media directive */
+@media (max-width: 1200px) {
+  .flex-col:not(.md\:flex-row) > div {
+    width: 100%;
   }
+}
+/* hide scrollbar for chrome, safari, and opera */
+body::-webkit-scrollbar {
+  display: none;
+}
+::-webkit-scrollbar {
+  display: none;
 }
