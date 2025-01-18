@@ -2,7 +2,7 @@ import React from "react";
 import { Form, Input, Select, SelectItem, Button } from "@heroui/react";
 import { useNavigate } from "react-router-dom";
 
-export default function Login() {
+export default function App() {
   const [password, setPassword] = React.useState("");
   const [submitted, setSubmitted] = React.useState(null);
   const [errors, setErrors] = React.useState({});
@@ -30,10 +30,7 @@ export default function Login() {
     if (data.name === "admin" && data.password === "admin") {
       navigate("/summary");
       return;
-    } 
-    // else if (data.name === "admin") {
-    //   newErrors.name = "Nice try! Choose a different username";
-    // }
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -51,18 +48,19 @@ export default function Login() {
   };
 
   return (
+    // md:flex-nowrap 
     <Form
-      className="justify-center items-center space-y-4 mx-auto  max-w-4xl" // Added max width and centered the form
-      validationBehavior="native"
-      validationErrors={errors}
-      onReset={() => setSubmitted(null)}
-      onSubmit={onSubmit}
-    >
-      <div className="flex flex-col gap-4">
-        <Input
+    className="justify-center items-center space-y-4 max-w-4xl w-full" // Use max-w-4xl to limit width on larger screens
+    validationBehavior="native"
+    validationErrors={errors}
+    // onReset={() => setSubmitted(null)}
+    onSubmit={onSubmit}
+  >
+    <div className="flex w-full flex-wrap gap-4">
+    <Input
           size="lg"
-          fullWidth
           isRequired
+          fullWidth
           errorMessage={({ validationDetails }) => {
             if (validationDetails.valueMissing) {
               return "Please enter your name";
@@ -73,7 +71,6 @@ export default function Login() {
           labelPlacement="outside"
           name="name"
           placeholder="Enter your name"
-          className="w-full"
         />
 
         <Input
@@ -93,13 +90,12 @@ export default function Login() {
           name="email"
           placeholder="Enter your email"
           type="email"
-          className="w-full"
         />
 
         <Input
           isRequired
-          fullWidth
           size="lg"
+          fullWidth
           errorMessage={getPasswordError(password)}
           isInvalid={getPasswordError(password) !== null}
           label="Password"
@@ -109,7 +105,6 @@ export default function Login() {
           type="password"
           value={password}
           onValueChange={setPassword}
-          className="w-full"
         />
 
         <Select
@@ -120,7 +115,6 @@ export default function Login() {
           labelPlacement="outside"
           name="language"
           placeholder="Select Language"
-          className="w-full"
         >
           <SelectItem key="kr" value="kr">
             Korean
@@ -132,22 +126,18 @@ export default function Login() {
             German
           </SelectItem>
         </Select>
-
-        <div className="flex gap-4 py-5">
-          <Button className="w-full" color="primary" type="submit">
+       
+          <Button size="lg" fullWidth color="primary" type="submit">
             Submit
           </Button>
-          <Button type="reset" variant="bordered">
-            Reset
-          </Button>
         </div>
-      </div>
 
       {submitted && (
         <div className="text-small text-default-500 mt-4">
           Submitted data: <pre>{JSON.stringify(submitted, null, 2)}</pre>
         </div>
       )}
+
     </Form>
   );
 }
