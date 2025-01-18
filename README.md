@@ -45,3 +45,30 @@ Remix 기반의 프론트엔드 애플리케이션을 관리합니다.
   - 예: 파일 업로드 버튼, 결과 표시 카드.
 - `utils/`: 프론트엔드 유틸리티 함수 (예: Python 서버 호출 함수).
 - nextui-> heroui 사용
+
+version 0.1
+
+- openai : 0.28.0
+- Tried using Hugging face but it kept failing due to hw limitations
+- gpt 4o mini
+
+```
+Downloading PDF...
+PDF successfully downloaded: paper.pdf
+Validating PDF...
+PDF validation successful.
+Extracting text from PDF...
+Text extraction successful.
+Splitting text into chunks...
+Generating summary...
+Generated 35 chunks for processing.
+Generated summary: The paper discusses the development and evaluation of Retrieval-Augmented Generation (RAG) models for knowledge-intensive NLP tasks. RAG models combine pre-trained parametric memory, typically from sequence-to-sequence (seq2seq) models, with non-parametric memory accessed through a retriever. This hybrid approach aims to address limitations of traditional large pre-trained language models, such as their inability to effectively access and update factual knowledge. The authors present two formulations of RAG: RAG-Sequence, which uses the same retrieved document for generating an entire sequence, and RAG-Token, which allows for different documents to influence each output token. The models were fine-tuned and evaluated on a variety of tasks, including open-domain question answering and language generation, demonstrating state-of-the-art performance on several benchmarks and outperforming traditional parametric models.
+
+RAG's architecture enables it to generate more factual, specific, and diverse outputs compared to baseline models. The paper also highlights the model's ability to update its knowledge dynamically by swapping its non-parametric memory, enhancing its adaptability to changing information over time. The results emphasize the effectiveness of combining parametric and non-parametric approaches in NLP, suggesting new avenues for research into how these memory types can be integrated for improved performance across various tasks.
+INFO:     127.0.0.1:53148 - "POST /generate-summary HTTP/1.1" 200 OK
+^CINFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [97858]
+INFO:     Stopping reloader process [96771]
+```

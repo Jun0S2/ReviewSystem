@@ -1,13 +1,23 @@
-fastapi
-uvicorn
-pydantic
-langchain
-langchain-community
-transformers
-torch
-torchvision
-torchaudio
-requests
-pypdf
-tiktoken
-langchain-openai
+# FastAPI framework for building APIs
+fastapi==0.95.2
+
+# ASGI server to serve FastAPI apps
+uvicorn==0.22.0
+
+# PDF handling library
+pypdf==3.15.2
+
+# HTTP client for Python
+requests==2.32.0
+
+# OpenAI Python library (pinned to 0.28.0 due to compatibility)
+openai==0.28.0
+
+# Python library to load environment variables from .env files
+python-dotenv==1.0.0
+
+# Progress bar for CLI operations
+tqdm==4.66.1
+
+# Optional: If you use testing
+pytest==7.4.2
