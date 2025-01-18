@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Add this in your CSS file or use Tailwind's @media directive */
+@media (max-width: 1200px) {
+  .flex-col:not(.md\:flex-row) > div {
+    width: 100%;
+  }
+}
+/* hide scrollbar for chrome, safari, and opera */
+body::-webkit-scrollbar {
+  display: none;
+}
+::-webkit-scrollbar {
+  display: none;
+}
