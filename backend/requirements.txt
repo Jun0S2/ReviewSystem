@@ -1,3 +1,13 @@
 fastapi
 uvicorn
 pydantic
+langchain
+langchain-community
+transformers
+torch
+torchvision
+torchaudio
+requests
+pypdf
+tiktoken
+langchain-openai
