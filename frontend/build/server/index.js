@@ -1,12 +1,12 @@
 import { jsx, jsxs } from "react/jsx-runtime";
 import { PassThrough } from "node:stream";
-import { createReadableStreamFromReadable, json, redirect } from "@remix-run/node";
+import { createReadableStreamFromReadable, json } from "@remix-run/node";
 import { RemixServer, Outlet, Meta, Links, ScrollRestoration, Scripts, useLoaderData, useFetcher } from "@remix-run/react";
 import { isbot } from "isbot";
 import { renderToPipeableStream } from "react-dom/server";
 import { HeroUIProvider, Card, CardBody, Form, Input, Select, SelectItem, Button, CardHeader, Divider } from "@heroui/react";
 import dotenv from "dotenv";
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 const ABORT_DELAY = 5e3;
 function handleRequest(request, responseStatusCode, responseHeaders, remixContext, loadContext) {
@@ -151,7 +151,7 @@ const route0 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProper
   loader: loader$1
 }, Symbol.toStringTag, { value: "Module" }));
 dotenv.config();
-async function action$1({ request }) {
+async function action({ request }) {
   const formData = await request.formData();
   const pdf_url = formData.get("pdf_url");
   const baseBackendUrl = "http://localhost:8000";
@@ -171,33 +171,8 @@ async function action$1({ request }) {
 }
 const route1 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
-  action: action$1
+  action
 }, Symbol.toStringTag, { value: "Module" }));
-dotenv.config({ path: "../.env" });
-const action = async ({ request }) => {
-  const formData = await request.formData();
-  const pdf_url = formData.get("pdf_url");
-  const backendUrl = `${"http://localhost:8000"}${"/process-pdf-test"}`;
-  console.log("Backend URL:", backendUrl);
-  const response = await fetch(backendUrl, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ pdf_url })
-  });
-  if (!response.ok) {
-    throw new Response("Failed to fetch summary", { status: response.status });
-  }
-  const data = await response.json();
-  return redirect("/summary_result", {
-    headers: {
-      "Set-Cookie": `summary_data=${encodeURIComponent(
-        JSON.stringify(data)
-      )}; Path=/; HttpOnly`
-    }
-  });
-};
 const loader = async ({ request }) => {
   const cookieHeader = request.headers.get("Cookie") || "";
   const cookies = Object.fromEntries(
@@ -216,7 +191,7 @@ function SummaryResultPage() {
       "div",
       {
         className: "absolute inset-0 -z-10 h-full w-full bg-cover bg-center",
-        style: { backgroundImage: url("https://bg.ibelick.com/") },
+        style: { backgroundImage: `url('https://bg.ibelick.com/')` },
         children: /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px]", children: /* @__PURE__ */ jsx("div", { className: "absolute left-0 right-0 top-0 -z-10 m-auto h-[310px] w-[310px] rounded-full bg-fuchsia-400 opacity-20 blur-[100px]" }) })
       }
     ),
@@ -243,7 +218,6 @@ function SummaryResultPage() {
 }
 const route2 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
-  action,
   default: SummaryResultPage,
   loader
 }, Symbol.toStringTag, { value: "Module" }));
@@ -275,17 +249,25 @@ const route3 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProper
 }, Symbol.toStringTag, { value: "Module" }));
 function SummaryPage() {
   const fetcher = useFetcher();
+  const navigate = useNavigate();
   const handleSubmit = (event) => {
     event.preventDefault();
     const formData = new FormData(event.target);
     fetcher.submit(formData, { method: "post", action: "/summary_result" });
+    window.location.href = "/summary_result";
   };
+  useEffect(() => {
+    if (fetcher.state === "idle" && fetcher.data) {
+      console.log("Navigating with data:", fetcher.data);
+      navigate("/summary_result", { state: fetcher.data });
+    }
+  }, [fetcher.state, fetcher.data, navigate]);
   return /* @__PURE__ */ jsxs("div", { className: "p-10 relative", children: [
     /* @__PURE__ */ jsx(
       "div",
       {
         className: "absolute inset-0 -z-10 h-full w-full bg-cover bg-center",
-        style: { backgroundImage: url("https://bg.ibelick.com/") },
+        style: { backgroundImage: `url('https://bg.ibelick.com/')` },
         children: /* @__PURE__ */ jsx("div", { className: "absolute inset-0 -z-10 h-full w-full bg-white bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px]" })
       }
     ),
@@ -501,7 +483,7 @@ const route5 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProper
   __proto__: null,
   default: Index
 }, Symbol.toStringTag, { value: "Module" }));
-const serverManifest = { "entry": { "module": "/assets/entry.client-DLMNcIKM.js", "imports": ["/assets/jsx-runtime-CASUWNUz.js", "/assets/index-BK8PXoN_.js", "/assets/components-jWeUhm97.js"], "css": [] }, "routes": { "root": { "id": "root", "parentId": void 0, "path": "", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": true, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/root-CZ2gzQXl.js", "imports": ["/assets/jsx-runtime-CASUWNUz.js", "/assets/index-BK8PXoN_.js", "/assets/components-jWeUhm97.js", "/assets/filter-props-DXQSvolY.js", "/assets/context-BxCHRKTj.js", "/assets/GlobalConfig-BfVCAYU5.js"], "css": ["/assets/root-DH9AOsSp.css"] }, "routes/api.generate-summary": { "id": "routes/api.generate-summary", "parentId": "root", "path": "api/generate-summary", "index": void 0, "caseSensitive": void 0, "hasAction": true, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/api.generate-summary-l0sNRNKZ.js", "imports": [], "css": [] }, "routes/summary_result": { "id": "routes/summary_result", "parentId": "root", "path": "summary_result", "index": void 0, "caseSensitive": void 0, "hasAction": true, "hasLoader": true, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/index-0Dr-zcAB.js", "imports": ["/assets/jsx-runtime-CASUWNUz.js", "/assets/components-jWeUhm97.js", "/assets/chunk-5PILOUBS-DPsBPY6M.js", "/assets/index-BK8PXoN_.js", "/assets/filter-props-DXQSvolY.js"], "css": [] }, "routes/layout._index": { "id": "routes/layout._index", "parentId": "root", "path": "layout", "index": true, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/layout._index-C5fIYVD4.js", "imports": ["/assets/jsx-runtime-CASUWNUz.js", "/assets/chunk-5PILOUBS-DPsBPY6M.js", "/assets/filter-props-DXQSvolY.js"], "css": [] }, "routes/summary": { "id": "routes/summary", "parentId": "root", "path": "summary", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/index-CNd9w3F4.js", "imports": ["/assets/jsx-runtime-CASUWNUz.js", "/assets/components-jWeUhm97.js", "/assets/chunk-5PILOUBS-DPsBPY6M.js", "/assets/index-BK8PXoN_.js", "/assets/filter-props-DXQSvolY.js"], "css": [] }, "routes/_index": { "id": "routes/_index", "parentId": "root", "path": void 0, "index": true, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/_index-CrEv6uX8.js", "imports": ["/assets/jsx-runtime-CASUWNUz.js", "/assets/index-BK8PXoN_.js", "/assets/chunk-5PILOUBS-DPsBPY6M.js", "/assets/filter-props-DXQSvolY.js", "/assets/context-BxCHRKTj.js"], "css": [] } }, "url": "/assets/manifest-bdc5ccf0.js", "version": "bdc5ccf0" };
+const serverManifest = { "entry": { "module": "/assets/entry.client-DXkII6qw.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/index-DcwSJpmB.js", "/assets/components-oYi-Ni-Q.js"], "css": [] }, "routes": { "root": { "id": "root", "parentId": void 0, "path": "", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": true, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/root-zTPhovhg.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/index-DcwSJpmB.js", "/assets/components-oYi-Ni-Q.js", "/assets/filter-props-C1xhq6Pn.js", "/assets/context-DnmjkyMh.js", "/assets/GlobalConfig-BfVCAYU5.js"], "css": ["/assets/root-DH9AOsSp.css"] }, "routes/api.generate-summary": { "id": "routes/api.generate-summary", "parentId": "root", "path": "api/generate-summary", "index": void 0, "caseSensitive": void 0, "hasAction": true, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/api.generate-summary-l0sNRNKZ.js", "imports": [], "css": [] }, "routes/summary_result": { "id": "routes/summary_result", "parentId": "root", "path": "summary_result", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": true, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/index-ChN0M792.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/components-oYi-Ni-Q.js", "/assets/chunk-5PILOUBS-Ci_WEwJl.js", "/assets/index-DcwSJpmB.js", "/assets/filter-props-C1xhq6Pn.js"], "css": [] }, "routes/layout._index": { "id": "routes/layout._index", "parentId": "root", "path": "layout", "index": true, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/layout._index-DXsOZalU.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/chunk-5PILOUBS-Ci_WEwJl.js", "/assets/filter-props-C1xhq6Pn.js"], "css": [] }, "routes/summary": { "id": "routes/summary", "parentId": "root", "path": "summary", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/index-Bk_qhqON.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/components-oYi-Ni-Q.js", "/assets/index-DcwSJpmB.js", "/assets/chunk-5PILOUBS-Ci_WEwJl.js", "/assets/filter-props-C1xhq6Pn.js"], "css": [] }, "routes/_index": { "id": "routes/_index", "parentId": "root", "path": void 0, "index": true, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/_index-vSxUO7pz.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/index-DcwSJpmB.js", "/assets/chunk-5PILOUBS-Ci_WEwJl.js", "/assets/filter-props-C1xhq6Pn.js", "/assets/context-DnmjkyMh.js"], "css": [] } }, "url": "/assets/manifest-d580778b.js", "version": "d580778b" };
 const mode = "production";
 const assetsBuildDirectory = "build/client";
 const basename = "/";

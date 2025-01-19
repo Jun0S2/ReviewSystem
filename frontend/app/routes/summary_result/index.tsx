@@ -2,50 +2,69 @@ import { useLoaderData } from "@remix-run/react";
 import { redirect, json } from "@remix-run/node";
 import { Card, CardBody } from "@heroui/react";
 import dotenv from "dotenv";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
-// 명시적으로 .env 경로 설정
-dotenv.config({ path: "../.env" });
+// // 명시적으로 .env 경로 설정
+// dotenv.config({ path: "../.env" });
 
-// Action: PDF URL을 받아서 백엔드로 데이터 전달
-export const action = async ({ request }) => {
-  const formData = await request.formData();
-  const pdf_url = formData.get("pdf_url");
+// // Action: PDF URL을 받아서 백엔드로 데이터 전달
+// export const action = async ({ request }) => {
+//   const formData = await request.formData();
+//   const pdf_url = formData.get("pdf_url");
 
-  // Test Mode 설정 확인
-  const useTestMode = process.env.USE_TEST_MODE === "true";
+//   // Test Mode 설정 확인
+//   const useTestMode = process.env.USE_TEST_MODE === "true";
 
-  // Backend API URL 설정
-  const backendUrl = process.env.BACKEND_URL
-    ? `${process.env.BACKEND_URL}${useTestMode ? "/process-pdf-test" : "/process-pdf"}`
-    : `http://localhost:8000${useTestMode ? "/process-pdf-test" : "/process-pdf"}`;
+//   // Backend API URL 설정
+//   const backendUrl = process.env.BACKEND_URL
+//     ? `${process.env.BACKEND_URL}${useTestMode ? "/process-pdf-test" : "/process-pdf"}`
+//     : `http://localhost:8000${useTestMode ? "/process-pdf-test" : "/process-pdf"}`;
 
-  console.log("Backend URL:", backendUrl); // 디버깅용 로그
+//   console.log("Backend URL:", backendUrl); // 디버깅용 로그
 
-  const response = await fetch(backendUrl, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ pdf_url }),
-  });
+//   const response = await fetch(backendUrl, {
+//     method: "POST",
+//     headers: {
+//       "Content-Type": "application/json",
+//     },
+//     body: JSON.stringify({ pdf_url }),
+//   });
 
-  if (!response.ok) {
-    throw new Response("Failed to fetch summary", { status: response.status });
-  }
+//   if (!response.ok) {
+//     throw new Response("Failed to fetch summary", { status: response.status });
+//   }
 
-  const data = await response.json();
+//   const data = await response.json();
 
-  // 데이터를 쿼리 파라미터 없이 전달
-return redirect("/summary_result", {
-  headers: {
-    "Set-Cookie": `summary_data=${encodeURIComponent(
-      JSON.stringify(data)
-    )}; Path=/; HttpOnly`,
-  },
-});
-};
+//   // 데이터를 쿼리 파라미터 없이 전달
+// return redirect("/summary_result", {
+//   headers: {
+//     "Set-Cookie": `summary_data=${encodeURIComponent(
+//       JSON.stringify(data)
+//     )}; Path=/; HttpOnly`,
+//   },
+// });
+// };
 
-// Loader: 쿠키에서 데이터 가져오기
+// // Loader: 쿠키에서 데이터 가져오기
+// export const loader = async ({ request }) => {
+//   const cookieHeader = request.headers.get("Cookie") || "";
+//   const cookies = Object.fromEntries(
+//     cookieHeader
+//       .split("; ")
+//       .map((c) => c.split("="))
+//       .map(([key, ...v]) => [key, decodeURIComponent(v.join("="))])
+//   );
+
+//   const summaryData = cookies["summary_data"];
+//   if (!summaryData) {
+//     throw new Response("No data available", { status: 400 });
+//   }
+
+//   return json(JSON.parse(summaryData));
+// };
+
 export const loader = async ({ request }) => {
   const cookieHeader = request.headers.get("Cookie") || "";
   const cookies = Object.fromEntries(

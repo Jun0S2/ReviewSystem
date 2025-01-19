@@ -5,18 +5,30 @@
  */
  import { useFetcher } from "@remix-run/react";
  import { Card, CardBody } from "@heroui/react";
- 
+ import React, { useEffect } from "react";
+ import { useNavigate } from "react-router-dom";
  export default function SummaryPage() {
    const fetcher = useFetcher();
- 
+   const navigate = useNavigate();
    const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
      event.preventDefault();
      const formData = new FormData(event.target as HTMLFormElement);
  
      // 데이터를 summary_result로 POST
      fetcher.submit(formData, { method: "post", action: "/summary_result" });
+     // POST 성공 시 summary_result로 redirect
+     window.location.href = "/summary_result";
    };
- 
+
+  useEffect(() => {
+    // fetcher 상태가 idle이고, data가 있으면 navigate 실행
+    if (fetcher.state === "idle" && fetcher.data) {
+      console.log("Navigating with data:", fetcher.data);
+      navigate("/summary_result", { state: fetcher.data });
+    }
+  }, [fetcher.state, fetcher.data, navigate]);
+
+  
    return (
      <div className="p-10 relative">
        <div
@@ -60,7 +72,7 @@
                </div>
  
                <button
-                 type="submit"
+                  type="submit"
                  className="w-full py-3 text-white bg-blue-600 hover:bg-blue-700 rounded-lg font-medium"
                >
                  Upload
