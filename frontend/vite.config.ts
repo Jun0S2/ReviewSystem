@@ -1,12 +1,10 @@
 import { vitePlugin as remix } from "@remix-run/dev";
 import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
+import dotenv from "dotenv";
 
-declare module "@remix-run/node" {
-  interface Future {
-    v3_singleFetch: true;
-  }
-}
+// 명시적으로 .env 경로 설정
+dotenv.config({ path: "../.env" });
 
 export default defineConfig({
   plugins: [
@@ -21,4 +19,9 @@ export default defineConfig({
     }),
     tsconfigPaths(),
   ],
+  define: {
+    // Expose environment variables to client-side code
+    "process.env.BACKEND_URL": JSON.stringify(process.env.BACKEND_URL),
+    "process.env.USE_TEST_MODE": JSON.stringify(process.env.USE_TEST_MODE),
+  },
 });

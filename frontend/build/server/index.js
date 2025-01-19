@@ -1,10 +1,10 @@
 import { jsx, jsxs } from "react/jsx-runtime";
 import { PassThrough } from "node:stream";
-import { createReadableStreamFromReadable, json } from "@remix-run/node";
-import { RemixServer, Outlet, Meta, Links, ScrollRestoration, Scripts, useFetcher } from "@remix-run/react";
+import { createReadableStreamFromReadable, json, redirect } from "@remix-run/node";
+import { RemixServer, Outlet, Meta, Links, ScrollRestoration, Scripts, useLoaderData, useFetcher } from "@remix-run/react";
 import { isbot } from "isbot";
 import { renderToPipeableStream } from "react-dom/server";
-import { HeroUIProvider, Form, Input, Select, SelectItem, Button, Card, CardHeader, Divider, CardBody } from "@heroui/react";
+import { HeroUIProvider, Card, CardBody, Form, Input, Select, SelectItem, Button, CardHeader, Divider } from "@heroui/react";
 import dotenv from "dotenv";
 import React from "react";
 import { useNavigate } from "react-router-dom";
@@ -106,10 +106,10 @@ const entryServer = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineP
   __proto__: null,
   default: handleRequest
 }, Symbol.toStringTag, { value: "Module" }));
-const loader = async () => {
+const loader$1 = async () => {
   return json({
     ENV: {
-      BACKEND_URL: process.env.BACKEND_URL || "http://localhost:8000"
+      BACKEND_URL: "http://localhost:8000"
     }
   });
 };
@@ -148,13 +148,15 @@ const route0 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProper
   Layout,
   default: App$1,
   links,
-  loader
+  loader: loader$1
 }, Symbol.toStringTag, { value: "Module" }));
 dotenv.config();
 async function action$1({ request }) {
   const formData = await request.formData();
   const pdf_url = formData.get("pdf_url");
-  const backendUrl = process.env.BACKEND_URL || "http://localhost:8000/generate-summary";
+  const baseBackendUrl = "http://localhost:8000";
+  const endpoint = "/process-pdf-test";
+  const backendUrl = `${baseBackendUrl}${endpoint}`;
   const response = await fetch(backendUrl, {
     method: "POST",
     headers: {
@@ -171,53 +173,165 @@ const route1 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProper
   __proto__: null,
   action: action$1
 }, Symbol.toStringTag, { value: "Module" }));
-dotenv.config();
-async function action({ request }) {
+dotenv.config({ path: "../.env" });
+const action = async ({ request }) => {
   const formData = await request.formData();
   const pdf_url = formData.get("pdf_url");
-  const prompt = formData.get("prompt");
-  const backendUrl = process.env.BACKEND_URL || "http://localhost:8000//generate-summary";
+  const backendUrl = `${"http://localhost:8000"}${"/process-pdf-test"}`;
+  console.log("Backend URL:", backendUrl);
   const response = await fetch(backendUrl, {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
     },
-    body: JSON.stringify({ pdf_url, prompt })
+    body: JSON.stringify({ pdf_url })
   });
   if (!response.ok) {
-    throw new Error("Failed to fetch data from the backend");
+    throw new Response("Failed to fetch summary", { status: response.status });
   }
-  return response.json();
+  const data = await response.json();
+  return redirect("/summary_result", {
+    headers: {
+      "Set-Cookie": `summary_data=${encodeURIComponent(
+        JSON.stringify(data)
+      )}; Path=/; HttpOnly`
+    }
+  });
+};
+const loader = async ({ request }) => {
+  const cookieHeader = request.headers.get("Cookie") || "";
+  const cookies = Object.fromEntries(
+    cookieHeader.split("; ").map((c) => c.split("=")).map(([key, ...v]) => [key, decodeURIComponent(v.join("="))])
+  );
+  const summaryData = cookies["summary_data"];
+  if (!summaryData) {
+    throw new Response("No data available", { status: 400 });
+  }
+  return json(JSON.parse(summaryData));
+};
+function SummaryResultPage() {
+  const { title, authors, summary, highlighted_sentences } = useLoaderData();
+  return /* @__PURE__ */ jsxs("div", { className: "p-10 relative", children: [
+    /* @__PURE__ */ jsx(
+      "div",
+      {
+        className: "absolute inset-0 -z-10 h-full w-full bg-cover bg-center",
+        style: { backgroundImage: url("https://bg.ibelick.com/") },
+        children: /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px]", children: /* @__PURE__ */ jsx("div", { className: "absolute left-0 right-0 top-0 -z-10 m-auto h-[310px] w-[310px] rounded-full bg-fuchsia-400 opacity-20 blur-[100px]" }) })
+      }
+    ),
+    /* @__PURE__ */ jsxs("div", { className: "flex justify-center items-center  flex-col md:flex-row md:w-full", children: [
+      /* @__PURE__ */ jsxs("div", { className: "md:w-2/5 text-center md:text-left mb-4 md:mb-0 px-5", children: [
+        /* @__PURE__ */ jsx("div", { className: "text-4xl font-bold py-5", children: "Generated Summary" }),
+        /* @__PURE__ */ jsxs("div", { className: "text-lg font-bold py-5", children: [
+          "Title: ",
+          title || "Unknown Title"
+        ] }),
+        /* @__PURE__ */ jsxs("div", { className: "text-sm font py-5", children: [
+          "Authors: ",
+          authors.length > 0 ? authors.join(", ") : "Unknown Authors"
+        ] }),
+        /* @__PURE__ */ jsx("div", { className: "text-lg font-bold py-5", children: "Summary" }),
+        /* @__PURE__ */ jsx("div", { className: "text-md", children: summary || "No summary available." })
+      ] }),
+      /* @__PURE__ */ jsx(Card, { className: "md:w-3/5 md:ml-10 w-full h-auto", children: /* @__PURE__ */ jsxs(CardBody, { className: "p-10", children: [
+        /* @__PURE__ */ jsx("div", { className: "text-lg font-bold mb-4", children: "Highlighted Sentences" }),
+        /* @__PURE__ */ jsx("div", { className: "text-md text-gray-500", children: highlighted_sentences && highlighted_sentences.length > 0 ? /* @__PURE__ */ jsx("ul", { className: "list-disc pl-5 space-y-2", children: highlighted_sentences.map((sentence, index) => /* @__PURE__ */ jsx("li", { className: "text-gray-700", children: sentence }, index)) }) : /* @__PURE__ */ jsx("div", { children: "No highlighted sentences available." }) })
+      ] }) })
+    ] })
+  ] });
 }
 const route2 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
-  action
+  action,
+  default: SummaryResultPage,
+  loader
 }, Symbol.toStringTag, { value: "Module" }));
-function SummaryPage() {
-  const fetcher = useFetcher();
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    const formData = new FormData(event.target);
-    fetcher.submit(formData, { method: "post", action: "/api/generate-summary" });
-  };
-  return /* @__PURE__ */ jsxs("div", { children: [
-    /* @__PURE__ */ jsx("h1", { children: "Generate Highlighted Sentences and Summary" }),
-    /* @__PURE__ */ jsxs("form", { onSubmit: handleSubmit, children: [
-      /* @__PURE__ */ jsxs("label", { children: [
-        "PDF URL:",
-        /* @__PURE__ */ jsx("input", { type: "url", name: "pdf_url", required: true })
+function Index$1() {
+  return /* @__PURE__ */ jsxs("div", { className: "p-10 relative", children: [
+    /* @__PURE__ */ jsx(
+      "div",
+      {
+        className: "absolute inset-0 -z-10 h-full w-full bg-cover bg-center",
+        style: { backgroundImage: `url('https://bg.ibelick.com/')` },
+        children: /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px]", children: /* @__PURE__ */ jsx("div", { className: "absolute left-0 right-0 top-0 -z-10 m-auto h-[310px] w-[310px] rounded-full bg-fuchsia-400 opacity-20 blur-[100px]" }) })
+      }
+    ),
+    /* @__PURE__ */ jsxs("div", { className: "flex justify-center items-center h-[100vh] flex-col md:flex-row md:w-full", children: [
+      /* @__PURE__ */ jsxs("div", { className: "md:w-2/5 text-center md:text-left mb-4 md:mb-0 px-5", children: [
+        /* @__PURE__ */ jsx("div", { className: "text-4xl font-bold py-5", children: "Generated Summary" }),
+        /* @__PURE__ */ jsx("div", { className: "text-lg font-bold py-5", children: "Title :" }),
+        /* @__PURE__ */ jsx("div", { className: "text-sm font py-5", children: "author :" }),
+        /* @__PURE__ */ jsx("div", { className: "text-lg font-bold py-5", children: "Summary" }),
+        /* @__PURE__ */ jsx("div", { className: "text-md", children: "blah blah" })
       ] }),
-      /* @__PURE__ */ jsx("button", { type: "submit", children: "Generate" })
-    ] }),
-    fetcher.data && /* @__PURE__ */ jsxs("div", { children: [
-      /* @__PURE__ */ jsx("h2", { children: "Highlighted Sentences:" }),
-      /* @__PURE__ */ jsx("ul", { children: fetcher.data.highlighted_sentences.map((sentence, index) => /* @__PURE__ */ jsx("li", { children: sentence }, index)) }),
-      /* @__PURE__ */ jsx("h2", { children: "Summary:" }),
-      /* @__PURE__ */ jsx("p", { children: fetcher.data.summary })
+      /* @__PURE__ */ jsx(Card, { className: "md:w-3/5 md:ml-10 w-full h-auto", children: /* @__PURE__ */ jsx(CardBody, { className: "p-10" }) })
     ] })
   ] });
 }
 const route3 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+  __proto__: null,
+  default: Index$1
+}, Symbol.toStringTag, { value: "Module" }));
+function SummaryPage() {
+  const fetcher = useFetcher();
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    const formData = new FormData(event.target);
+    fetcher.submit(formData, { method: "post", action: "/summary_result" });
+  };
+  return /* @__PURE__ */ jsxs("div", { className: "p-10 relative", children: [
+    /* @__PURE__ */ jsx(
+      "div",
+      {
+        className: "absolute inset-0 -z-10 h-full w-full bg-cover bg-center",
+        style: { backgroundImage: url("https://bg.ibelick.com/") },
+        children: /* @__PURE__ */ jsx("div", { className: "absolute inset-0 -z-10 h-full w-full bg-white bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px]" })
+      }
+    ),
+    /* @__PURE__ */ jsxs("div", { className: "flex flex-col justify-center items-center h-[100vh]", children: [
+      /* @__PURE__ */ jsx("div", { className: "text-4xl font-bold mb-8 text-center", children: "Generate Summary" }),
+      /* @__PURE__ */ jsx(Card, { className: "w-full max-w-xl p-6 shadow-lg bg-white rounded-lg border border-gray-200", children: /* @__PURE__ */ jsx(CardBody, { children: /* @__PURE__ */ jsxs("form", { onSubmit: handleSubmit, className: "space-y-4", children: [
+        /* @__PURE__ */ jsxs("div", { className: "flex flex-col space-y-2", children: [
+          /* @__PURE__ */ jsx("label", { htmlFor: "pdf_url", className: "font-semibold text-gray-600", children: "PDF URL" }),
+          /* @__PURE__ */ jsx(
+            "input",
+            {
+              type: "url",
+              name: "pdf_url",
+              id: "pdf_url",
+              required: true,
+              className: "p-3 border rounded-md shadow-sm border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none",
+              placeholder: "https://"
+            }
+          )
+        ] }),
+        /* @__PURE__ */ jsxs("div", { className: "flex flex-col space-y-2", children: [
+          /* @__PURE__ */ jsx("label", { htmlFor: "pdf_file", className: "font-semibold text-gray-600", children: "Or Upload PDF File" }),
+          /* @__PURE__ */ jsx(
+            "input",
+            {
+              type: "file",
+              name: "pdf_file",
+              id: "pdf_file",
+              accept: ".pdf",
+              className: "p-3 border rounded-md shadow-sm border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            }
+          )
+        ] }),
+        /* @__PURE__ */ jsx(
+          "button",
+          {
+            type: "submit",
+            className: "w-full py-3 text-white bg-blue-600 hover:bg-blue-700 rounded-lg font-medium",
+            children: "Upload"
+          }
+        )
+      ] }) }) })
+    ] })
+  ] });
+}
+const route4 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   default: SummaryPage
 }, Symbol.toStringTag, { value: "Module" }));
@@ -383,11 +497,11 @@ function Index() {
     ] })
   ] });
 }
-const route4 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const route5 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   default: Index
 }, Symbol.toStringTag, { value: "Module" }));
-const serverManifest = { "entry": { "module": "/assets/entry.client-CAGeryr7.js", "imports": ["/assets/index-dcywsMd4.js", "/assets/components-qwzCP8Jy.js"], "css": [] }, "routes": { "root": { "id": "root", "parentId": void 0, "path": "", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": true, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/root-DKn9lBbV.js", "imports": ["/assets/index-dcywsMd4.js", "/assets/components-qwzCP8Jy.js", "/assets/filter-props-DXSZD5UK.js", "/assets/GlobalConfig-BfVCAYU5.js"], "css": ["/assets/root-99JHfk4Z.css"] }, "routes/api.generate-summary": { "id": "routes/api.generate-summary", "parentId": "root", "path": "api/generate-summary", "index": void 0, "caseSensitive": void 0, "hasAction": true, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/api.generate-summary-l0sNRNKZ.js", "imports": [], "css": [] }, "routes/api.summarize": { "id": "routes/api.summarize", "parentId": "root", "path": "api/summarize", "index": void 0, "caseSensitive": void 0, "hasAction": true, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/api.summarize-l0sNRNKZ.js", "imports": [], "css": [] }, "routes/summary": { "id": "routes/summary", "parentId": "root", "path": "summary", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/index-BQud0Bxv.js", "imports": ["/assets/index-dcywsMd4.js", "/assets/components-qwzCP8Jy.js"], "css": [] }, "routes/_index": { "id": "routes/_index", "parentId": "root", "path": void 0, "index": true, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/_index-1LbWYyZ5.js", "imports": ["/assets/_index-CaLBXJLj.js", "/assets/index-dcywsMd4.js", "/assets/filter-props-DXSZD5UK.js"], "css": [] } }, "url": "/assets/manifest-a358312c.js", "version": "a358312c" };
+const serverManifest = { "entry": { "module": "/assets/entry.client-DLMNcIKM.js", "imports": ["/assets/jsx-runtime-CASUWNUz.js", "/assets/index-BK8PXoN_.js", "/assets/components-jWeUhm97.js"], "css": [] }, "routes": { "root": { "id": "root", "parentId": void 0, "path": "", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": true, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/root-CZ2gzQXl.js", "imports": ["/assets/jsx-runtime-CASUWNUz.js", "/assets/index-BK8PXoN_.js", "/assets/components-jWeUhm97.js", "/assets/filter-props-DXQSvolY.js", "/assets/context-BxCHRKTj.js", "/assets/GlobalConfig-BfVCAYU5.js"], "css": ["/assets/root-DH9AOsSp.css"] }, "routes/api.generate-summary": { "id": "routes/api.generate-summary", "parentId": "root", "path": "api/generate-summary", "index": void 0, "caseSensitive": void 0, "hasAction": true, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/api.generate-summary-l0sNRNKZ.js", "imports": [], "css": [] }, "routes/summary_result": { "id": "routes/summary_result", "parentId": "root", "path": "summary_result", "index": void 0, "caseSensitive": void 0, "hasAction": true, "hasLoader": true, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/index-0Dr-zcAB.js", "imports": ["/assets/jsx-runtime-CASUWNUz.js", "/assets/components-jWeUhm97.js", "/assets/chunk-5PILOUBS-DPsBPY6M.js", "/assets/index-BK8PXoN_.js", "/assets/filter-props-DXQSvolY.js"], "css": [] }, "routes/layout._index": { "id": "routes/layout._index", "parentId": "root", "path": "layout", "index": true, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/layout._index-C5fIYVD4.js", "imports": ["/assets/jsx-runtime-CASUWNUz.js", "/assets/chunk-5PILOUBS-DPsBPY6M.js", "/assets/filter-props-DXQSvolY.js"], "css": [] }, "routes/summary": { "id": "routes/summary", "parentId": "root", "path": "summary", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/index-CNd9w3F4.js", "imports": ["/assets/jsx-runtime-CASUWNUz.js", "/assets/components-jWeUhm97.js", "/assets/chunk-5PILOUBS-DPsBPY6M.js", "/assets/index-BK8PXoN_.js", "/assets/filter-props-DXQSvolY.js"], "css": [] }, "routes/_index": { "id": "routes/_index", "parentId": "root", "path": void 0, "index": true, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/_index-CrEv6uX8.js", "imports": ["/assets/jsx-runtime-CASUWNUz.js", "/assets/index-BK8PXoN_.js", "/assets/chunk-5PILOUBS-DPsBPY6M.js", "/assets/filter-props-DXQSvolY.js", "/assets/context-BxCHRKTj.js"], "css": [] } }, "url": "/assets/manifest-bdc5ccf0.js", "version": "bdc5ccf0" };
 const mode = "production";
 const assetsBuildDirectory = "build/client";
 const basename = "/";
@@ -412,13 +526,21 @@ const routes = {
     caseSensitive: void 0,
     module: route1
   },
-  "routes/api.summarize": {
-    id: "routes/api.summarize",
+  "routes/summary_result": {
+    id: "routes/summary_result",
     parentId: "root",
-    path: "api/summarize",
+    path: "summary_result",
     index: void 0,
     caseSensitive: void 0,
     module: route2
+  },
+  "routes/layout._index": {
+    id: "routes/layout._index",
+    parentId: "root",
+    path: "layout",
+    index: true,
+    caseSensitive: void 0,
+    module: route3
   },
   "routes/summary": {
     id: "routes/summary",
@@ -426,7 +548,7 @@ const routes = {
     path: "summary",
     index: void 0,
     caseSensitive: void 0,
-    module: route3
+    module: route4
   },
   "routes/_index": {
     id: "routes/_index",
@@ -434,7 +556,7 @@ const routes = {
     path: void 0,
     index: true,
     caseSensitive: void 0,
-    module: route4
+    module: route5
   }
 };
 export {
