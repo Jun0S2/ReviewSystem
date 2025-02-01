@@ -28,6 +28,9 @@ def read_root():
 @app.post("/process-pdf-test")
 async def process_pdf_test(request: SummaryRequest):
     print("Received request:", request)
+    pdf_url = request.pdf_url
+    pdf_path = "paper.pdf"
+    print("PDF URL : " , pdf_url)
     """
     Test API: Returns fixed dummy data without processing a real PDF.
     """
@@ -42,6 +45,7 @@ async def process_pdf_test(request: SummaryRequest):
             'Pre-\ntrained models with a differentiable access mechanism to explicit non-parametric\nmemory have so far been only investigated for extractive downstream tasks.', 
             'We\nexplore a general-purpose ﬁne-tuning recipe for retrieval-augmented generation\n(RAG) — models which combine pre-trained parametric and non-parametric mem-\nory for language generation.',
         ],
+        "pdf_url": pdf_url,
     }
 
 
@@ -53,7 +57,7 @@ async def process_pdf(request: SummaryRequest):
     """
     pdf_url = request.pdf_url
     pdf_path = "paper.pdf"
-
+    print("PDF URL : " , pdf_url)
     try:
         # Download and validate the PDF
         download_pdf(pdf_url, pdf_path)
@@ -80,6 +84,7 @@ async def process_pdf(request: SummaryRequest):
             "authors": authors,
             "summary": summary,
             "highlighted_sentences": highlighted_sentences,
+            "pdf_url": pdf_url,
         }
 
     except Exception as e:
