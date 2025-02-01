@@ -38,7 +38,7 @@ export default function SummaryResultPage() {
         <MenuBar />
 
         {/* 메인 콘텐츠 */}
-        <div className="p-10 relative md:w-4/5 md:ml-[20%] flex-grow md:h-[calc(100vh-80px)]">
+        <div className="p-10 relative md:w-4/5 xl:ml-[20%] flex-grow md:h-[calc(100vh-80px)]">
           {/* 3:2 레이아웃 적용 */}
           <div className="grid grid-cols-1 md:grid-cols-5 gap-6 h-full">
             {/* Highlighted Sentences (3/5 비율) */}

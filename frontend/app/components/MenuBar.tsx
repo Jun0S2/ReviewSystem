@@ -26,7 +26,7 @@ export default function MenuBar() {
       {/* ✅ 네비바 (항상 표시) */}
       <Navbar isMenuOpen={isMenuOpen} onMenuOpenChange={setIsMenuOpen}>
         <NavbarContent justify="start">
-          <NavbarMenuToggle className="md:hidden" aria-label={isMenuOpen ? "Close menu" : "Open menu"} />
+          <NavbarMenuToggle className="xl:hidden" aria-label={isMenuOpen ? "Close menu" : "Open menu"} />
         </NavbarContent>
 
         <NavbarContent justify="center">
@@ -57,8 +57,8 @@ export default function MenuBar() {
         </NavbarMenu>
       </Navbar>
 
-      {/* ✅ md 이상에서는 왼쪽에 사이드바 고정 */}
-      <div className="hidden md:block md:w-1/5 md:h-screen md:fixed md:left-0 md:top-[4rem] md:shadow-lg md:p-6">
+      {/* ✅ xl 이상에서는 왼쪽에 사이드바 고정 */}
+      <div className="hidden xl:block md:w-1/5 md:h-screen md:fixed md:left-0 md:top-[4rem] md:shadow-lg md:p-6">
           <div className="text-lg mb-3 font-bold text-center"> Generate New Summary</div>
           <Divider />
           <div className="p-5">
