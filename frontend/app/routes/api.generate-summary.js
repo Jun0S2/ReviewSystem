@@ -1,17 +1,17 @@
 import dotenv from "dotenv";
+import { json } from "@remix-run/node"; // Import json wrapper
+
 dotenv.config();
 
 export async function action({ request }) {
   const formData = await request.formData();
   const pdf_url = formData.get("pdf_url");
 
-  // Determine the backend URL dynamically
   const baseBackendUrl = process.env.BACKEND_URL || "http://localhost:8000";
-  const useTestMode = process.env.USE_TEST_MODE === "true"; // Read from environment variables
-  const endpoint = useTestMode ? "/process-pdf-test" : "/process-pdf"; // Switch based on test mode
-  const backendUrl = `${baseBackendUrl}${endpoint}`; // Combine base URL with endpoint
+  const useTestMode = process.env.USE_TEST_MODE === "true";
+  const endpoint = useTestMode ? "/process-pdf-test" : "/process-pdf";
+  const backendUrl = `${baseBackendUrl}${endpoint}`;
 
-  // Call the backend API
   const response = await fetch(backendUrl, {
     method: "POST",
     headers: {
@@ -24,5 +24,7 @@ export async function action({ request }) {
     throw new Error("Failed to fetch data from the backend");
   }
 
-  return response.json();
+  const data = await response.json();
+  // return data; // Return the data directly
+  return json(data);
 }

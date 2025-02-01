@@ -174,15 +174,12 @@ const route1 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProper
   action
 }, Symbol.toStringTag, { value: "Module" }));
 const loader = async ({ request }) => {
-  const cookieHeader = request.headers.get("Cookie") || "";
-  const cookies = Object.fromEntries(
-    cookieHeader.split("; ").map((c) => c.split("=")).map(([key, ...v]) => [key, decodeURIComponent(v.join("="))])
-  );
-  const summaryData = cookies["summary_data"];
-  if (!summaryData) {
+  const url = new URL(request.url);
+  const state = url.searchParams.get("state");
+  if (!state) {
     throw new Response("No data available", { status: 400 });
   }
-  return json(JSON.parse(summaryData));
+  return JSON.parse(state);
 };
 function SummaryResultPage() {
   const { title, authors, summary, highlighted_sentences } = useLoaderData();
@@ -195,7 +192,7 @@ function SummaryResultPage() {
         children: /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px]", children: /* @__PURE__ */ jsx("div", { className: "absolute left-0 right-0 top-0 -z-10 m-auto h-[310px] w-[310px] rounded-full bg-fuchsia-400 opacity-20 blur-[100px]" }) })
       }
     ),
-    /* @__PURE__ */ jsxs("div", { className: "flex justify-center items-center  flex-col md:flex-row md:w-full", children: [
+    /* @__PURE__ */ jsxs("div", { className: "flex justify-center items-center flex-col md:flex-row md:w-full", children: [
       /* @__PURE__ */ jsxs("div", { className: "md:w-2/5 text-center md:text-left mb-4 md:mb-0 px-5", children: [
         /* @__PURE__ */ jsx("div", { className: "text-4xl font-bold py-5", children: "Generated Summary" }),
         /* @__PURE__ */ jsxs("div", { className: "text-lg font-bold py-5", children: [
@@ -253,12 +250,10 @@ function SummaryPage() {
   const handleSubmit = (event) => {
     event.preventDefault();
     const formData = new FormData(event.target);
-    fetcher.submit(formData, { method: "post", action: "/summary_result" });
-    window.location.href = "/summary_result";
+    fetcher.submit(formData, { method: "post", action: "/api-generate" });
   };
   useEffect(() => {
     if (fetcher.state === "idle" && fetcher.data) {
-      console.log("Navigating with data:", fetcher.data);
       navigate("/summary_result", { state: fetcher.data });
     }
   }, [fetcher.state, fetcher.data, navigate]);
@@ -483,7 +478,7 @@ const route5 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProper
   __proto__: null,
   default: Index
 }, Symbol.toStringTag, { value: "Module" }));
-const serverManifest = { "entry": { "module": "/assets/entry.client-DXkII6qw.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/index-DcwSJpmB.js", "/assets/components-oYi-Ni-Q.js"], "css": [] }, "routes": { "root": { "id": "root", "parentId": void 0, "path": "", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": true, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/root-zTPhovhg.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/index-DcwSJpmB.js", "/assets/components-oYi-Ni-Q.js", "/assets/filter-props-C1xhq6Pn.js", "/assets/context-DnmjkyMh.js", "/assets/GlobalConfig-BfVCAYU5.js"], "css": ["/assets/root-DH9AOsSp.css"] }, "routes/api.generate-summary": { "id": "routes/api.generate-summary", "parentId": "root", "path": "api/generate-summary", "index": void 0, "caseSensitive": void 0, "hasAction": true, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/api.generate-summary-l0sNRNKZ.js", "imports": [], "css": [] }, "routes/summary_result": { "id": "routes/summary_result", "parentId": "root", "path": "summary_result", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": true, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/index-ChN0M792.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/components-oYi-Ni-Q.js", "/assets/chunk-5PILOUBS-Ci_WEwJl.js", "/assets/index-DcwSJpmB.js", "/assets/filter-props-C1xhq6Pn.js"], "css": [] }, "routes/layout._index": { "id": "routes/layout._index", "parentId": "root", "path": "layout", "index": true, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/layout._index-DXsOZalU.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/chunk-5PILOUBS-Ci_WEwJl.js", "/assets/filter-props-C1xhq6Pn.js"], "css": [] }, "routes/summary": { "id": "routes/summary", "parentId": "root", "path": "summary", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/index-Bk_qhqON.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/components-oYi-Ni-Q.js", "/assets/index-DcwSJpmB.js", "/assets/chunk-5PILOUBS-Ci_WEwJl.js", "/assets/filter-props-C1xhq6Pn.js"], "css": [] }, "routes/_index": { "id": "routes/_index", "parentId": "root", "path": void 0, "index": true, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/_index-vSxUO7pz.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/index-DcwSJpmB.js", "/assets/chunk-5PILOUBS-Ci_WEwJl.js", "/assets/filter-props-C1xhq6Pn.js", "/assets/context-DnmjkyMh.js"], "css": [] } }, "url": "/assets/manifest-d580778b.js", "version": "d580778b" };
+const serverManifest = { "entry": { "module": "/assets/entry.client-DXkII6qw.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/index-DcwSJpmB.js", "/assets/components-oYi-Ni-Q.js"], "css": [] }, "routes": { "root": { "id": "root", "parentId": void 0, "path": "", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": true, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/root-CI1gHUpS.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/index-DcwSJpmB.js", "/assets/components-oYi-Ni-Q.js", "/assets/filter-props-C1xhq6Pn.js", "/assets/context-DnmjkyMh.js", "/assets/GlobalConfig-BfVCAYU5.js"], "css": ["/assets/root-DlV-YRB_.css"] }, "routes/api.generate-summary": { "id": "routes/api.generate-summary", "parentId": "root", "path": "api/generate-summary", "index": void 0, "caseSensitive": void 0, "hasAction": true, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/api.generate-summary-l0sNRNKZ.js", "imports": [], "css": [] }, "routes/summary_result": { "id": "routes/summary_result", "parentId": "root", "path": "summary_result", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": true, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/index-DWlH43lx.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/components-oYi-Ni-Q.js", "/assets/chunk-5PILOUBS-CKQ1zdYs.js", "/assets/index-DcwSJpmB.js", "/assets/filter-props-C1xhq6Pn.js"], "css": [] }, "routes/layout._index": { "id": "routes/layout._index", "parentId": "root", "path": "layout", "index": true, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/layout._index-Cqqc7c-L.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/chunk-5PILOUBS-CKQ1zdYs.js", "/assets/filter-props-C1xhq6Pn.js"], "css": [] }, "routes/summary": { "id": "routes/summary", "parentId": "root", "path": "summary", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/index-DN39bkwb.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/components-oYi-Ni-Q.js", "/assets/index-DcwSJpmB.js", "/assets/chunk-5PILOUBS-CKQ1zdYs.js", "/assets/filter-props-C1xhq6Pn.js"], "css": [] }, "routes/_index": { "id": "routes/_index", "parentId": "root", "path": void 0, "index": true, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/_index-CuUXorzv.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/index-DcwSJpmB.js", "/assets/chunk-5PILOUBS-CKQ1zdYs.js", "/assets/filter-props-C1xhq6Pn.js", "/assets/context-DnmjkyMh.js"], "css": [] } }, "url": "/assets/manifest-591aefdc.js", "version": "591aefdc" };
 const mode = "production";
 const assetsBuildDirectory = "build/client";
 const basename = "/";

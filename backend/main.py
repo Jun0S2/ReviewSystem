@@ -27,6 +27,7 @@ def read_root():
 # Test API for process-pdf
 @app.post("/process-pdf-test")
 async def process_pdf_test(request: SummaryRequest):
+    print("Received request:", request)
     """
     Test API: Returns fixed dummy data without processing a real PDF.
     """
@@ -46,6 +47,7 @@ async def process_pdf_test(request: SummaryRequest):
 
 # @app.post("/process-pdf")
 async def process_pdf(request: SummaryRequest):
+    print("Received request:", request)
     """
     Processes the PDF once and extracts text, title, authors, summary, and highlighted sentences.
     """
