@@ -1,3 +1,27 @@
+# Documents
+
+## SummaryAI Overview
+
+SummaryAI processes a given PDF URL to:
+
+1. Generate a summary
+2. Extract key sentences
+3. Highlight important content within the PDF viewer
+
+## Demos & Documentation
+
+📌 [Click here](https://bit.ly/summary-ai-june-park) to access demos and documentation.
+
+> Due to financial constraints, the OpenAI token has been temporarily disconnected.  
+> However, a demo video is available at the link above.
+
+## Upcoming Updates
+
+- [ ] Highlight cover letters
+- [ ] Recalculate (x, y) coordinates in full-screen mode
+- [ ] Improve summary prompting
+- [ ] Support upload option for local PDF Files
+
 # Architecture
 
 ```bash
