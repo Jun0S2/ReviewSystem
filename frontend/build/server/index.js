@@ -4,7 +4,7 @@ import { createReadableStreamFromReadable, json } from "@remix-run/node";
 import { RemixServer, Outlet, Meta, Links, ScrollRestoration, Scripts, useLocation, useFetcher } from "@remix-run/react";
 import { isbot } from "isbot";
 import { renderToPipeableStream } from "react-dom/server";
-import { HeroUIProvider, NavbarContent, NavbarMenuToggle, NavbarBrand, NavbarItem, Link, Button, NavbarMenu, NavbarMenuItem, Card, CardBody, Form, Input, Select, SelectItem, CardHeader, Divider } from "@heroui/react";
+import { HeroUIProvider, Navbar, NavbarContent, NavbarMenuToggle, NavbarBrand, NavbarItem, Button, NavbarMenu, NavbarMenuItem, Card, CardHeader, Divider, CardBody, Form, Input, Select, SelectItem } from "@heroui/react";
 import dotenv from "dotenv";
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -174,60 +174,86 @@ const route1 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProper
   __proto__: null,
   action
 }, Symbol.toStringTag, { value: "Module" }));
-const AcmeLogo = () => {
-  return /* @__PURE__ */ jsx("svg", { fill: "none", height: "36", viewBox: "0 0 32 32", width: "36", children: /* @__PURE__ */ jsx(
-    "path",
-    {
-      clipRule: "evenodd",
-      d: "M17.6482 10.1305L15.8785 7.02583L7.02979 22.5499H10.5278L17.6482 10.1305ZM19.8798 14.0457L18.11 17.1983L19.394 19.4511H16.8453L15.1056 22.5499H24.7272L19.8798 14.0457Z",
-      fill: "currentColor",
-      fillRule: "evenodd"
+const handleSubmit = async (event, navigate) => {
+  event.preventDefault();
+  const formData = new FormData(event.target);
+  try {
+    const response = await fetch("/api/generate-summary", {
+      method: "POST",
+      body: formData
+    });
+    if (!response.ok) {
+      throw new Error("Failed to fetch data from the backend");
     }
-  ) });
+    const data = await response.json();
+    navigate("/summary_result", { state: data });
+  } catch (error) {
+    console.error("Error:", error);
+    alert("An error occurred while processing the PDF.");
+  }
 };
-function Navbar() {
-  const [isMenuOpen, setIsMenuOpen] = React.useState(false);
-  const menuItems = [
-    "Profile",
-    "Dashboard",
-    "Activity",
-    "Analytics",
-    "System",
-    "Deployments",
-    "My Settings",
-    "Team Settings",
-    "Help & Feedback",
-    "Log Out"
-  ];
-  return /* @__PURE__ */ jsxs(Navbar, { isBordered: true, isMenuOpen, onMenuOpenChange: setIsMenuOpen, children: [
-    /* @__PURE__ */ jsx(NavbarContent, { className: "sm:hidden", justify: "start", children: /* @__PURE__ */ jsx(NavbarMenuToggle, { "aria-label": isMenuOpen ? "Close menu" : "Open menu" }) }),
-    /* @__PURE__ */ jsx(NavbarContent, { className: "sm:hidden pr-3", justify: "center", children: /* @__PURE__ */ jsxs(NavbarBrand, { children: [
-      /* @__PURE__ */ jsx(AcmeLogo, {}),
-      /* @__PURE__ */ jsx("p", { className: "font-bold text-inherit", children: "ACME" })
-    ] }) }),
-    /* @__PURE__ */ jsxs(NavbarContent, { className: "hidden sm:flex gap-4", justify: "center", children: [
-      /* @__PURE__ */ jsxs(NavbarBrand, { children: [
-        /* @__PURE__ */ jsx(AcmeLogo, {}),
-        /* @__PURE__ */ jsx("p", { className: "font-bold text-inherit", children: "ACME" })
-      ] }),
-      /* @__PURE__ */ jsx(NavbarItem, { children: /* @__PURE__ */ jsx(Link, { color: "foreground", href: "#", children: "Features" }) }),
-      /* @__PURE__ */ jsx(NavbarItem, { isActive: true, children: /* @__PURE__ */ jsx(Link, { "aria-current": "page", href: "#", children: "Customers" }) }),
-      /* @__PURE__ */ jsx(NavbarItem, { children: /* @__PURE__ */ jsx(Link, { color: "foreground", href: "#", children: "Integrations" }) })
+const route2 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+  __proto__: null,
+  handleSubmit
+}, Symbol.toStringTag, { value: "Module" }));
+const PDFInput = ({ onSubmit, className }) => {
+  return /* @__PURE__ */ jsx("div", { children: /* @__PURE__ */ jsxs("form", { onSubmit, className: "space-y-4", children: [
+    /* @__PURE__ */ jsxs("div", { className: "flex flex-col space-y-2", children: [
+      /* @__PURE__ */ jsx("label", { htmlFor: "pdf_url", className: "font-semibold text-gray-600", children: "PDF URL" }),
+      /* @__PURE__ */ jsx(
+        "input",
+        {
+          type: "url",
+          name: "pdf_url",
+          id: "pdf_url",
+          required: true,
+          className: "p-3 border rounded-md shadow-sm border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none",
+          placeholder: "https://"
+        }
+      )
     ] }),
-    /* @__PURE__ */ jsxs(NavbarContent, { justify: "end", children: [
-      /* @__PURE__ */ jsx(NavbarItem, { className: "hidden lg:flex", children: /* @__PURE__ */ jsx(Link, { href: "#", children: "Login" }) }),
-      /* @__PURE__ */ jsx(NavbarItem, { children: /* @__PURE__ */ jsx(Button, { as: Link, color: "warning", href: "#", variant: "flat", children: "Sign Up" }) })
+    /* @__PURE__ */ jsxs("div", { className: "flex flex-col space-y-2", children: [
+      /* @__PURE__ */ jsx("label", { htmlFor: "pdf_file", className: "font-semibold text-gray-600", children: "Or Upload PDF File" }),
+      /* @__PURE__ */ jsx(
+        "input",
+        {
+          type: "file",
+          name: "pdf_file",
+          id: "pdf_file",
+          accept: ".pdf",
+          className: "p-3 border rounded-md shadow-sm border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+        }
+      )
     ] }),
-    /* @__PURE__ */ jsx(NavbarMenu, { children: menuItems.map((item, index) => /* @__PURE__ */ jsx(NavbarMenuItem, { children: /* @__PURE__ */ jsx(
-      Link,
+    /* @__PURE__ */ jsx(
+      "button",
       {
-        className: "w-full",
-        color: index === 2 ? "warning" : index === menuItems.length - 1 ? "danger" : "foreground",
-        href: "#",
-        size: "lg",
-        children: item
+        type: "submit",
+        className: "w-full py-3 text-white bg-blue-600 hover:bg-blue-700 rounded-lg font-medium",
+        children: "Upload"
       }
-    ) }, `${item}-${index}`)) })
+    )
+  ] }) });
+};
+function MenuBar() {
+  const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+  const navigate = useNavigate();
+  return /* @__PURE__ */ jsxs(Fragment, { children: [
+    /* @__PURE__ */ jsxs(Navbar, { isBordered: true, isMenuOpen, onMenuOpenChange: setIsMenuOpen, children: [
+      /* @__PURE__ */ jsx(NavbarContent, { justify: "start", children: /* @__PURE__ */ jsx(NavbarMenuToggle, { className: "md:hidden", "aria-label": isMenuOpen ? "Close menu" : "Open menu" }) }),
+      /* @__PURE__ */ jsx(NavbarContent, { justify: "center", children: /* @__PURE__ */ jsx(NavbarBrand, { children: /* @__PURE__ */ jsx("p", { className: "font-bold text-inherit", children: "Summary AI" }) }) }),
+      /* @__PURE__ */ jsx(NavbarContent, { justify: "end", children: /* @__PURE__ */ jsx(NavbarItem, { children: /* @__PURE__ */ jsx(Button, { color: "warning", href: "#", variant: "flat", children: "Logout" }) }) }),
+      /* @__PURE__ */ jsx(NavbarMenu, { children: /* @__PURE__ */ jsx(NavbarMenuItem, { children: /* @__PURE__ */ jsxs(Card, { className: "w-full max-w-xl p-6 shadow-lg bg-white rounded-lg border border-gray-200", children: [
+        /* @__PURE__ */ jsx(CardHeader, { className: "text-xl font-bold text-center", children: " Generate New Summary" }),
+        /* @__PURE__ */ jsx(Divider, {}),
+        /* @__PURE__ */ jsx(CardBody, { children: /* @__PURE__ */ jsx(PDFInput, { onSubmit: (e) => handleSubmit(e, navigate) }) })
+      ] }) }) })
+    ] }),
+    /* @__PURE__ */ jsxs("div", { className: "hidden md:block md:w-1/5 md:h-screen md:fixed md:left-0 md:top-[4rem] md:bg-white md:shadow-lg md:p-6", children: [
+      /* @__PURE__ */ jsx("div", { className: "text-lg mb-3 font-bold text-center", children: " Generate New Summary" }),
+      /* @__PURE__ */ jsx(Divider, {}),
+      /* @__PURE__ */ jsx("div", { className: "p-5", children: /* @__PURE__ */ jsx(PDFInput, { onSubmit: (e) => handleSubmit(e, navigate) }) })
+    ] })
   ] });
 }
 function SummaryResultPage() {
@@ -238,8 +264,8 @@ function SummaryResultPage() {
   }
   const { title, authors, summary, highlighted_sentences } = data;
   return /* @__PURE__ */ jsxs(Fragment, { children: [
-    /* @__PURE__ */ jsx(Navbar, {}),
-    /* @__PURE__ */ jsxs("div", { className: "p-10 relative", children: [
+    /* @__PURE__ */ jsx(MenuBar, {}),
+    /* @__PURE__ */ jsxs("div", { className: "p-10 relative md:w-4/5 md:ml-[20%]", children: [
       /* @__PURE__ */ jsx("div", { className: "absolute inset-0 -z-10 h-full w-full bg-cover bg-center", style: { backgroundImage: `url('https://bg.ibelick.com/')` }, children: /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px]", children: /* @__PURE__ */ jsx("div", { className: "absolute left-0 right-0 top-0 -z-10 m-auto h-[310px] w-[310px] rounded-full bg-fuchsia-400 opacity-20 blur-[100px]" }) }) }),
       /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-1 md:grid-cols-5 gap-6", children: [
         /* @__PURE__ */ jsx(Card, { className: "md:col-span-3 w-full h-auto", children: /* @__PURE__ */ jsxs(CardBody, { className: "p-10", children: [
@@ -263,7 +289,7 @@ function SummaryResultPage() {
     ] })
   ] });
 }
-const route2 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const route3 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   default: SummaryResultPage
 }, Symbol.toStringTag, { value: "Module" }));
@@ -289,14 +315,14 @@ function Index$1() {
     ] })
   ] });
 }
-const route3 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const route4 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   default: Index$1
 }, Symbol.toStringTag, { value: "Module" }));
 function SummaryPage() {
   const fetcher = useFetcher();
   const navigate = useNavigate();
-  const handleSubmit = async (event) => {
+  const handleSubmit2 = async (event) => {
     event.preventDefault();
     const formData = new FormData(event.target);
     try {
@@ -330,47 +356,11 @@ function SummaryPage() {
     ),
     /* @__PURE__ */ jsxs("div", { className: "flex flex-col justify-center items-center h-[100vh]", children: [
       /* @__PURE__ */ jsx("div", { className: "text-4xl font-bold mb-8 text-center", children: "Generate Summary" }),
-      /* @__PURE__ */ jsx(Card, { className: "w-full max-w-xl p-6 shadow-lg bg-white rounded-lg border border-gray-200", children: /* @__PURE__ */ jsx(CardBody, { children: /* @__PURE__ */ jsxs("form", { onSubmit: handleSubmit, className: "space-y-4", children: [
-        /* @__PURE__ */ jsxs("div", { className: "flex flex-col space-y-2", children: [
-          /* @__PURE__ */ jsx("label", { htmlFor: "pdf_url", className: "font-semibold text-gray-600", children: "PDF URL" }),
-          /* @__PURE__ */ jsx(
-            "input",
-            {
-              type: "url",
-              name: "pdf_url",
-              id: "pdf_url",
-              required: true,
-              className: "p-3 border rounded-md shadow-sm border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none",
-              placeholder: "https://"
-            }
-          )
-        ] }),
-        /* @__PURE__ */ jsxs("div", { className: "flex flex-col space-y-2", children: [
-          /* @__PURE__ */ jsx("label", { htmlFor: "pdf_file", className: "font-semibold text-gray-600", children: "Or Upload PDF File" }),
-          /* @__PURE__ */ jsx(
-            "input",
-            {
-              type: "file",
-              name: "pdf_file",
-              id: "pdf_file",
-              accept: ".pdf",
-              className: "p-3 border rounded-md shadow-sm border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            }
-          )
-        ] }),
-        /* @__PURE__ */ jsx(
-          "button",
-          {
-            type: "submit",
-            className: "w-full py-3 text-white bg-blue-600 hover:bg-blue-700 rounded-lg font-medium",
-            children: "Upload"
-          }
-        )
-      ] }) }) })
+      /* @__PURE__ */ jsx(Card, { className: "w-full max-w-xl p-6 shadow-lg bg-white rounded-lg border border-gray-200", children: /* @__PURE__ */ jsx(CardBody, { children: /* @__PURE__ */ jsx(PDFInput, { onSubmit: (e) => handleSubmit2(e) }) }) })
     ] })
   ] });
 }
-const route4 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const route5 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   default: SummaryPage
 }, Symbol.toStringTag, { value: "Module" }));
@@ -536,11 +526,11 @@ function Index() {
     ] })
   ] });
 }
-const route5 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const route6 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   default: Index
 }, Symbol.toStringTag, { value: "Module" }));
-const serverManifest = { "entry": { "module": "/assets/entry.client-CK2Q56Wc.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/index-C_mK7mVM.js", "/assets/components-BsOMTYD6.js"], "css": [] }, "routes": { "root": { "id": "root", "parentId": void 0, "path": "", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": true, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/root-WUsuid1U.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/index-C_mK7mVM.js", "/assets/components-BsOMTYD6.js", "/assets/filter-props-Cyr6Gzwx.js", "/assets/context-CNg785T6.js", "/assets/GlobalConfig-BfVCAYU5.js"], "css": ["/assets/root-C34x7Q0Y.css"] }, "routes/api.generate-summary": { "id": "routes/api.generate-summary", "parentId": "root", "path": "api/generate-summary", "index": void 0, "caseSensitive": void 0, "hasAction": true, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/api.generate-summary-l0sNRNKZ.js", "imports": [], "css": [] }, "routes/summary_result": { "id": "routes/summary_result", "parentId": "root", "path": "summary_result", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/index-BRRH2fIU.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/filter-props-Cyr6Gzwx.js", "/assets/chunk-5PILOUBS-Ct20Gcaz.js", "/assets/chunk-XJ3PDX4B-HKiQEh1f.js", "/assets/index-C_mK7mVM.js"], "css": [] }, "routes/layout._index": { "id": "routes/layout._index", "parentId": "root", "path": "layout", "index": true, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/layout._index-BIRwvlvK.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/chunk-5PILOUBS-Ct20Gcaz.js", "/assets/filter-props-Cyr6Gzwx.js"], "css": [] }, "routes/summary": { "id": "routes/summary", "parentId": "root", "path": "summary", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/index-BqEZ3qH6.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/components-BsOMTYD6.js", "/assets/index-C_mK7mVM.js", "/assets/chunk-5PILOUBS-Ct20Gcaz.js", "/assets/filter-props-Cyr6Gzwx.js"], "css": [] }, "routes/_index": { "id": "routes/_index", "parentId": "root", "path": void 0, "index": true, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/_index-CkyZMwuI.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/index-C_mK7mVM.js", "/assets/chunk-5PILOUBS-Ct20Gcaz.js", "/assets/filter-props-Cyr6Gzwx.js", "/assets/chunk-XJ3PDX4B-HKiQEh1f.js", "/assets/context-CNg785T6.js"], "css": [] } }, "url": "/assets/manifest-2c9ab802.js", "version": "2c9ab802" };
+const serverManifest = { "entry": { "module": "/assets/entry.client-CK2Q56Wc.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/index-C_mK7mVM.js", "/assets/components-BsOMTYD6.js"], "css": [] }, "routes": { "root": { "id": "root", "parentId": void 0, "path": "", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": true, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/root-hJ5LN89W.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/index-C_mK7mVM.js", "/assets/components-BsOMTYD6.js", "/assets/filter-props-x3ph258H.js", "/assets/context-DVEV0D0Z.js", "/assets/GlobalConfig-BfVCAYU5.js"], "css": ["/assets/root-BKbo4kki.css"] }, "routes/api.generate-summary": { "id": "routes/api.generate-summary", "parentId": "root", "path": "api/generate-summary", "index": void 0, "caseSensitive": void 0, "hasAction": true, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/api.generate-summary-l0sNRNKZ.js", "imports": [], "css": [] }, "routes/api.form-handler": { "id": "routes/api.form-handler", "parentId": "root", "path": "api/form-handler", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/api.form-handler-l0sNRNKZ.js", "imports": [], "css": [] }, "routes/summary_result": { "id": "routes/summary_result", "parentId": "root", "path": "summary_result", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/index-E8YY_0hZ.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/PDFInput-Ce5v24m9.js", "/assets/index-C_mK7mVM.js", "/assets/chunk-5PILOUBS-TFWXZGTE.js", "/assets/filter-props-x3ph258H.js", "/assets/chunk-D5XJWRAV-z8JZ37lv.js"], "css": [] }, "routes/layout._index": { "id": "routes/layout._index", "parentId": "root", "path": "layout", "index": true, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/layout._index-BGeI9Jtq.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/chunk-5PILOUBS-TFWXZGTE.js", "/assets/filter-props-x3ph258H.js"], "css": [] }, "routes/summary": { "id": "routes/summary", "parentId": "root", "path": "summary", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/index-ChSnfsBr.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/PDFInput-Ce5v24m9.js", "/assets/components-BsOMTYD6.js", "/assets/index-C_mK7mVM.js", "/assets/chunk-5PILOUBS-TFWXZGTE.js", "/assets/filter-props-x3ph258H.js"], "css": [] }, "routes/_index": { "id": "routes/_index", "parentId": "root", "path": void 0, "index": true, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/_index-DQkXBiEI.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/index-C_mK7mVM.js", "/assets/chunk-5PILOUBS-TFWXZGTE.js", "/assets/filter-props-x3ph258H.js", "/assets/chunk-D5XJWRAV-z8JZ37lv.js", "/assets/context-DVEV0D0Z.js"], "css": [] } }, "url": "/assets/manifest-9c8d1c5e.js", "version": "9c8d1c5e" };
 const mode = "production";
 const assetsBuildDirectory = "build/client";
 const basename = "/";
@@ -565,13 +555,21 @@ const routes = {
     caseSensitive: void 0,
     module: route1
   },
+  "routes/api.form-handler": {
+    id: "routes/api.form-handler",
+    parentId: "root",
+    path: "api/form-handler",
+    index: void 0,
+    caseSensitive: void 0,
+    module: route2
+  },
   "routes/summary_result": {
     id: "routes/summary_result",
     parentId: "root",
     path: "summary_result",
     index: void 0,
     caseSensitive: void 0,
-    module: route2
+    module: route3
   },
   "routes/layout._index": {
     id: "routes/layout._index",
@@ -579,7 +577,7 @@ const routes = {
     path: "layout",
     index: true,
     caseSensitive: void 0,
-    module: route3
+    module: route4
   },
   "routes/summary": {
     id: "routes/summary",
@@ -587,7 +585,7 @@ const routes = {
     path: "summary",
     index: void 0,
     caseSensitive: void 0,
-    module: route4
+    module: route5
   },
   "routes/_index": {
     id: "routes/_index",
@@ -595,7 +593,7 @@ const routes = {
     path: void 0,
     index: true,
     caseSensitive: void 0,
-    module: route5
+    module: route6
   }
 };
 export {
