@@ -1,10 +1,10 @@
-import { jsx, jsxs } from "react/jsx-runtime";
+import { jsx, jsxs, Fragment } from "react/jsx-runtime";
 import { PassThrough } from "node:stream";
 import { createReadableStreamFromReadable, json } from "@remix-run/node";
-import { RemixServer, Outlet, Meta, Links, ScrollRestoration, Scripts, useLoaderData, useFetcher } from "@remix-run/react";
+import { RemixServer, Outlet, Meta, Links, ScrollRestoration, Scripts, useLocation, useFetcher } from "@remix-run/react";
 import { isbot } from "isbot";
 import { renderToPipeableStream } from "react-dom/server";
-import { HeroUIProvider, Card, CardBody, Form, Input, Select, SelectItem, Button, CardHeader, Divider } from "@heroui/react";
+import { HeroUIProvider, NavbarContent, NavbarMenuToggle, NavbarBrand, NavbarItem, Link, Button, NavbarMenu, NavbarMenuItem, Card, CardBody, Form, Input, Select, SelectItem, CardHeader, Divider } from "@heroui/react";
 import dotenv from "dotenv";
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -106,7 +106,7 @@ const entryServer = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineP
   __proto__: null,
   default: handleRequest
 }, Symbol.toStringTag, { value: "Module" }));
-const loader$1 = async () => {
+const loader = async () => {
   return json({
     ENV: {
       BACKEND_URL: "http://localhost:8000"
@@ -148,7 +148,7 @@ const route0 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProper
   Layout,
   default: App$1,
   links,
-  loader: loader$1
+  loader
 }, Symbol.toStringTag, { value: "Module" }));
 dotenv.config();
 async function action({ request }) {
@@ -167,56 +167,105 @@ async function action({ request }) {
   if (!response.ok) {
     throw new Error("Failed to fetch data from the backend");
   }
-  return response.json();
+  const data = await response.json();
+  return json(data);
 }
 const route1 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   action
 }, Symbol.toStringTag, { value: "Module" }));
-const loader = async ({ request }) => {
-  const url = new URL(request.url);
-  const state = url.searchParams.get("state");
-  if (!state) {
-    throw new Response("No data available", { status: 400 });
-  }
-  return JSON.parse(state);
+const AcmeLogo = () => {
+  return /* @__PURE__ */ jsx("svg", { fill: "none", height: "36", viewBox: "0 0 32 32", width: "36", children: /* @__PURE__ */ jsx(
+    "path",
+    {
+      clipRule: "evenodd",
+      d: "M17.6482 10.1305L15.8785 7.02583L7.02979 22.5499H10.5278L17.6482 10.1305ZM19.8798 14.0457L18.11 17.1983L19.394 19.4511H16.8453L15.1056 22.5499H24.7272L19.8798 14.0457Z",
+      fill: "currentColor",
+      fillRule: "evenodd"
+    }
+  ) });
 };
-function SummaryResultPage() {
-  const { title, authors, summary, highlighted_sentences } = useLoaderData();
-  return /* @__PURE__ */ jsxs("div", { className: "p-10 relative", children: [
-    /* @__PURE__ */ jsx(
-      "div",
-      {
-        className: "absolute inset-0 -z-10 h-full w-full bg-cover bg-center",
-        style: { backgroundImage: `url('https://bg.ibelick.com/')` },
-        children: /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px]", children: /* @__PURE__ */ jsx("div", { className: "absolute left-0 right-0 top-0 -z-10 m-auto h-[310px] w-[310px] rounded-full bg-fuchsia-400 opacity-20 blur-[100px]" }) })
-      }
-    ),
-    /* @__PURE__ */ jsxs("div", { className: "flex justify-center items-center flex-col md:flex-row md:w-full", children: [
-      /* @__PURE__ */ jsxs("div", { className: "md:w-2/5 text-center md:text-left mb-4 md:mb-0 px-5", children: [
-        /* @__PURE__ */ jsx("div", { className: "text-4xl font-bold py-5", children: "Generated Summary" }),
-        /* @__PURE__ */ jsxs("div", { className: "text-lg font-bold py-5", children: [
-          "Title: ",
-          title || "Unknown Title"
-        ] }),
-        /* @__PURE__ */ jsxs("div", { className: "text-sm font py-5", children: [
-          "Authors: ",
-          authors.length > 0 ? authors.join(", ") : "Unknown Authors"
-        ] }),
-        /* @__PURE__ */ jsx("div", { className: "text-lg font-bold py-5", children: "Summary" }),
-        /* @__PURE__ */ jsx("div", { className: "text-md", children: summary || "No summary available." })
+function Navbar() {
+  const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+  const menuItems = [
+    "Profile",
+    "Dashboard",
+    "Activity",
+    "Analytics",
+    "System",
+    "Deployments",
+    "My Settings",
+    "Team Settings",
+    "Help & Feedback",
+    "Log Out"
+  ];
+  return /* @__PURE__ */ jsxs(Navbar, { isBordered: true, isMenuOpen, onMenuOpenChange: setIsMenuOpen, children: [
+    /* @__PURE__ */ jsx(NavbarContent, { className: "sm:hidden", justify: "start", children: /* @__PURE__ */ jsx(NavbarMenuToggle, { "aria-label": isMenuOpen ? "Close menu" : "Open menu" }) }),
+    /* @__PURE__ */ jsx(NavbarContent, { className: "sm:hidden pr-3", justify: "center", children: /* @__PURE__ */ jsxs(NavbarBrand, { children: [
+      /* @__PURE__ */ jsx(AcmeLogo, {}),
+      /* @__PURE__ */ jsx("p", { className: "font-bold text-inherit", children: "ACME" })
+    ] }) }),
+    /* @__PURE__ */ jsxs(NavbarContent, { className: "hidden sm:flex gap-4", justify: "center", children: [
+      /* @__PURE__ */ jsxs(NavbarBrand, { children: [
+        /* @__PURE__ */ jsx(AcmeLogo, {}),
+        /* @__PURE__ */ jsx("p", { className: "font-bold text-inherit", children: "ACME" })
       ] }),
-      /* @__PURE__ */ jsx(Card, { className: "md:w-3/5 md:ml-10 w-full h-auto", children: /* @__PURE__ */ jsxs(CardBody, { className: "p-10", children: [
-        /* @__PURE__ */ jsx("div", { className: "text-lg font-bold mb-4", children: "Highlighted Sentences" }),
-        /* @__PURE__ */ jsx("div", { className: "text-md text-gray-500", children: highlighted_sentences && highlighted_sentences.length > 0 ? /* @__PURE__ */ jsx("ul", { className: "list-disc pl-5 space-y-2", children: highlighted_sentences.map((sentence, index) => /* @__PURE__ */ jsx("li", { className: "text-gray-700", children: sentence }, index)) }) : /* @__PURE__ */ jsx("div", { children: "No highlighted sentences available." }) })
-      ] }) })
+      /* @__PURE__ */ jsx(NavbarItem, { children: /* @__PURE__ */ jsx(Link, { color: "foreground", href: "#", children: "Features" }) }),
+      /* @__PURE__ */ jsx(NavbarItem, { isActive: true, children: /* @__PURE__ */ jsx(Link, { "aria-current": "page", href: "#", children: "Customers" }) }),
+      /* @__PURE__ */ jsx(NavbarItem, { children: /* @__PURE__ */ jsx(Link, { color: "foreground", href: "#", children: "Integrations" }) })
+    ] }),
+    /* @__PURE__ */ jsxs(NavbarContent, { justify: "end", children: [
+      /* @__PURE__ */ jsx(NavbarItem, { className: "hidden lg:flex", children: /* @__PURE__ */ jsx(Link, { href: "#", children: "Login" }) }),
+      /* @__PURE__ */ jsx(NavbarItem, { children: /* @__PURE__ */ jsx(Button, { as: Link, color: "warning", href: "#", variant: "flat", children: "Sign Up" }) })
+    ] }),
+    /* @__PURE__ */ jsx(NavbarMenu, { children: menuItems.map((item, index) => /* @__PURE__ */ jsx(NavbarMenuItem, { children: /* @__PURE__ */ jsx(
+      Link,
+      {
+        className: "w-full",
+        color: index === 2 ? "warning" : index === menuItems.length - 1 ? "danger" : "foreground",
+        href: "#",
+        size: "lg",
+        children: item
+      }
+    ) }, `${item}-${index}`)) })
+  ] });
+}
+function SummaryResultPage() {
+  const location = useLocation();
+  const data = location.state;
+  if (!data) {
+    return /* @__PURE__ */ jsx("div", { children: "Error: No data available" });
+  }
+  const { title, authors, summary, highlighted_sentences } = data;
+  return /* @__PURE__ */ jsxs(Fragment, { children: [
+    /* @__PURE__ */ jsx(Navbar, {}),
+    /* @__PURE__ */ jsxs("div", { className: "p-10 relative", children: [
+      /* @__PURE__ */ jsx("div", { className: "absolute inset-0 -z-10 h-full w-full bg-cover bg-center", style: { backgroundImage: `url('https://bg.ibelick.com/')` }, children: /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px]", children: /* @__PURE__ */ jsx("div", { className: "absolute left-0 right-0 top-0 -z-10 m-auto h-[310px] w-[310px] rounded-full bg-fuchsia-400 opacity-20 blur-[100px]" }) }) }),
+      /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-1 md:grid-cols-5 gap-6", children: [
+        /* @__PURE__ */ jsx(Card, { className: "md:col-span-3 w-full h-auto", children: /* @__PURE__ */ jsxs(CardBody, { className: "p-10", children: [
+          /* @__PURE__ */ jsx("div", { className: "text-lg font-bold mb-4", children: "Highlighted Sentences" }),
+          /* @__PURE__ */ jsx("div", { className: "text-md text-gray-500", children: highlighted_sentences && highlighted_sentences.length > 0 ? /* @__PURE__ */ jsx("ul", { className: "list-disc pl-5 space-y-2", children: highlighted_sentences.map((sentence, index) => /* @__PURE__ */ jsx("li", { className: "text-gray-700", children: sentence }, index)) }) : /* @__PURE__ */ jsx("div", { children: "No highlighted sentences available." }) })
+        ] }) }),
+        /* @__PURE__ */ jsx(Card, { className: "md:col-span-2 w-full h-auto", children: /* @__PURE__ */ jsxs(CardBody, { className: "p-10", children: [
+          /* @__PURE__ */ jsx("div", { className: "text-4xl font-bold py-5", children: "Generated Summary" }),
+          /* @__PURE__ */ jsxs("div", { className: "text-lg font-bold py-5", children: [
+            "Title: ",
+            title || "Unknown Title"
+          ] }),
+          /* @__PURE__ */ jsxs("div", { className: "text-sm font py-5", children: [
+            "Authors: ",
+            authors.length > 0 ? authors.join(", ") : "Unknown Authors"
+          ] }),
+          /* @__PURE__ */ jsx("div", { className: "text-lg font-bold py-5", children: "Summary" }),
+          /* @__PURE__ */ jsx("div", { className: "text-md", children: summary || "No summary available." })
+        ] }) })
+      ] })
     ] })
   ] });
 }
 const route2 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
-  default: SummaryResultPage,
-  loader
+  default: SummaryResultPage
 }, Symbol.toStringTag, { value: "Module" }));
 function Index$1() {
   return /* @__PURE__ */ jsxs("div", { className: "p-10 relative", children: [
@@ -247,10 +296,23 @@ const route3 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProper
 function SummaryPage() {
   const fetcher = useFetcher();
   const navigate = useNavigate();
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     const formData = new FormData(event.target);
-    fetcher.submit(formData, { method: "post", action: "/api-generate" });
+    try {
+      const response = await fetch("/api/generate-summary", {
+        method: "POST",
+        body: formData
+      });
+      if (!response.ok) {
+        throw new Error("Failed to fetch data from the backend");
+      }
+      const data = await response.json();
+      navigate("/summary_result", { state: data });
+    } catch (error) {
+      console.error("Error:", error);
+      alert("An error occurred while processing the PDF.");
+    }
   };
   useEffect(() => {
     if (fetcher.state === "idle" && fetcher.data) {
@@ -478,7 +540,7 @@ const route5 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProper
   __proto__: null,
   default: Index
 }, Symbol.toStringTag, { value: "Module" }));
-const serverManifest = { "entry": { "module": "/assets/entry.client-DXkII6qw.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/index-DcwSJpmB.js", "/assets/components-oYi-Ni-Q.js"], "css": [] }, "routes": { "root": { "id": "root", "parentId": void 0, "path": "", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": true, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/root-CI1gHUpS.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/index-DcwSJpmB.js", "/assets/components-oYi-Ni-Q.js", "/assets/filter-props-C1xhq6Pn.js", "/assets/context-DnmjkyMh.js", "/assets/GlobalConfig-BfVCAYU5.js"], "css": ["/assets/root-DlV-YRB_.css"] }, "routes/api.generate-summary": { "id": "routes/api.generate-summary", "parentId": "root", "path": "api/generate-summary", "index": void 0, "caseSensitive": void 0, "hasAction": true, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/api.generate-summary-l0sNRNKZ.js", "imports": [], "css": [] }, "routes/summary_result": { "id": "routes/summary_result", "parentId": "root", "path": "summary_result", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": true, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/index-DWlH43lx.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/components-oYi-Ni-Q.js", "/assets/chunk-5PILOUBS-CKQ1zdYs.js", "/assets/index-DcwSJpmB.js", "/assets/filter-props-C1xhq6Pn.js"], "css": [] }, "routes/layout._index": { "id": "routes/layout._index", "parentId": "root", "path": "layout", "index": true, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/layout._index-Cqqc7c-L.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/chunk-5PILOUBS-CKQ1zdYs.js", "/assets/filter-props-C1xhq6Pn.js"], "css": [] }, "routes/summary": { "id": "routes/summary", "parentId": "root", "path": "summary", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/index-DN39bkwb.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/components-oYi-Ni-Q.js", "/assets/index-DcwSJpmB.js", "/assets/chunk-5PILOUBS-CKQ1zdYs.js", "/assets/filter-props-C1xhq6Pn.js"], "css": [] }, "routes/_index": { "id": "routes/_index", "parentId": "root", "path": void 0, "index": true, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/_index-CuUXorzv.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/index-DcwSJpmB.js", "/assets/chunk-5PILOUBS-CKQ1zdYs.js", "/assets/filter-props-C1xhq6Pn.js", "/assets/context-DnmjkyMh.js"], "css": [] } }, "url": "/assets/manifest-591aefdc.js", "version": "591aefdc" };
+const serverManifest = { "entry": { "module": "/assets/entry.client-CK2Q56Wc.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/index-C_mK7mVM.js", "/assets/components-BsOMTYD6.js"], "css": [] }, "routes": { "root": { "id": "root", "parentId": void 0, "path": "", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": true, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/root-WUsuid1U.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/index-C_mK7mVM.js", "/assets/components-BsOMTYD6.js", "/assets/filter-props-Cyr6Gzwx.js", "/assets/context-CNg785T6.js", "/assets/GlobalConfig-BfVCAYU5.js"], "css": ["/assets/root-C34x7Q0Y.css"] }, "routes/api.generate-summary": { "id": "routes/api.generate-summary", "parentId": "root", "path": "api/generate-summary", "index": void 0, "caseSensitive": void 0, "hasAction": true, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/api.generate-summary-l0sNRNKZ.js", "imports": [], "css": [] }, "routes/summary_result": { "id": "routes/summary_result", "parentId": "root", "path": "summary_result", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/index-BRRH2fIU.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/filter-props-Cyr6Gzwx.js", "/assets/chunk-5PILOUBS-Ct20Gcaz.js", "/assets/chunk-XJ3PDX4B-HKiQEh1f.js", "/assets/index-C_mK7mVM.js"], "css": [] }, "routes/layout._index": { "id": "routes/layout._index", "parentId": "root", "path": "layout", "index": true, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/layout._index-BIRwvlvK.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/chunk-5PILOUBS-Ct20Gcaz.js", "/assets/filter-props-Cyr6Gzwx.js"], "css": [] }, "routes/summary": { "id": "routes/summary", "parentId": "root", "path": "summary", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/index-BqEZ3qH6.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/components-BsOMTYD6.js", "/assets/index-C_mK7mVM.js", "/assets/chunk-5PILOUBS-Ct20Gcaz.js", "/assets/filter-props-Cyr6Gzwx.js"], "css": [] }, "routes/_index": { "id": "routes/_index", "parentId": "root", "path": void 0, "index": true, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/_index-CkyZMwuI.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/index-C_mK7mVM.js", "/assets/chunk-5PILOUBS-Ct20Gcaz.js", "/assets/filter-props-Cyr6Gzwx.js", "/assets/chunk-XJ3PDX4B-HKiQEh1f.js", "/assets/context-CNg785T6.js"], "css": [] } }, "url": "/assets/manifest-2c9ab802.js", "version": "2c9ab802" };
 const mode = "production";
 const assetsBuildDirectory = "build/client";
 const basename = "/";
