@@ -23,8 +23,9 @@ const PDFInput: React.FC<PDFInputProps> = ({ onSubmit, className }) => {
         </div>
 
         <div className="flex flex-col space-y-2">
-          <label htmlFor="pdf_file" className="font-semibold text-gray-600">Or Upload PDF File</label>
+          <label htmlFor="pdf_file" className="font-semibold text-gray-600">Or Upload PDF File (Not supported yet)</label>
           <input
+            disabled
             type="file"
             name="pdf_file"
             id="pdf_file"

@@ -1,7 +1,8 @@
 import { useLoaderData } from "@remix-run/react";
-import { Card, CardBody } from "@heroui/react";
+import { Card, CardBody, Divider } from "@heroui/react";
 import { useLocation } from "@remix-run/react";
 import MenuBar from "~/components/MenuBar";
+import PDFViewer from "~/components/PDFViewer";
 
 export default function SummaryResultPage() {
 /**
@@ -17,8 +18,10 @@ export default function SummaryResultPage() {
   if (!data) {
     return <div>Error: No data available</div>;
   }
-  const { title, authors, summary, highlighted_sentences } = data;
-
+  /**
+   * Get PDF URL to display pdf viewer
+   */
+  const { title, authors, summary, highlighted_sentences, pdf_url } = data;
 
   return (
     <>
@@ -41,21 +44,19 @@ export default function SummaryResultPage() {
         <div className="p-10 relative md:w-4/5 xl:ml-[20%] flex-grow md:h-[calc(100vh-80px)]">
           {/* 3:2 레이아웃 적용 */}
           <div className="grid grid-cols-1 md:grid-cols-5 gap-6 h-full">
-            {/* Highlighted Sentences (3/5 비율) */}
+            {/* PDF Viewer (3/5 비율) */}
             <Card className="md:col-span-3 w-full h-full flex flex-col">
               <CardBody className="p-10 overflow-y-auto overflow-scroll">
-                <div className="text-lg font-bold mb-4">Highlighted Sentences</div>
-                <div className="text-md text-gray-500">
-                  {highlighted_sentences && highlighted_sentences.length > 0 ? (
-                    <ul className="list-disc pl-5 space-y-2">
-                      {highlighted_sentences.map((sentence, index) => (
-                        <li key={index} className="text-gray-700">{sentence}</li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <div>No highlighted sentences available.</div>
-                  )}
-                </div>
+                  <div className="text-lg font-bold mb-4">PDF Viewer</div>
+                  <PDFViewer pdfUrl={pdf_url} highlightedSentences={highlighted_sentences} />
+
+                {/* <iframe
+                  src={pdf_url}
+                  width="100%"
+                  height="100%"
+                  style={{ border: 'none' }}
+                  title="PDF Viewer"
+                /> */}
               </CardBody>
             </Card>
 
@@ -64,11 +65,29 @@ export default function SummaryResultPage() {
               <CardBody className="p-10 overflow-scroll">
                 <div className="text-xl font-bold py-5">Generated Summary</div>
                 <div className="text-md font-bold">Title: {title || "Unknown Title"}</div>
+                <div className="">pdf url : {pdf_url} </div>
                 <div className="text-sm font">
                   Authors: {authors.length > 0 ? authors.join(", ") : "Unknown Authors"}
                 </div>
+                <Divider/>
+
                 <div className="text-lg font-bold py-5">Summary</div>
                 <div className="text-md">{summary || "No summary available."}</div>
+
+                <div className="text-lg font-bold py-5">Highlighted Sentences</div>
+                <div className="text-md text-gray-500">
+                  {highlighted_sentences && highlighted_sentences.length > 0 ? (
+                    <ul className="list-disc pl-5 space-y-2">
+                      {highlighted_sentences.map((sentence, index) => (
+                        <li key={index} className="text-gray-700 bg-yellow-200 p-1 rounded">
+                          {sentence}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <div>No highlighted sentences available.</div>
+                  )}
+                </div>
               </CardBody>
             </Card>
           </div>
