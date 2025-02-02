@@ -5,12 +5,12 @@ import "pdfjs-dist/web/pdf_viewer.css";
 // pdf.js Worker 설정
 pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.js";
 
-export default function PDFViewer({ pdfUrl, highlightedSentences }) {
+export default function PDFViewer({ pdfUrl, highlightedSentences, color }) {
   const containerRef = useRef(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [scale, setScale] = useState(1.0);
   const [pdfDoc, setPdfDoc] = useState(null);
-
+  console.log(color);
   // 📌 Parent Card의 width를 감지하여 scale 자동 조정
   useEffect(() => {
     const updateScale = () => {
@@ -101,20 +101,27 @@ export default function PDFViewer({ pdfUrl, highlightedSentences }) {
       );
 
       if (matchedSentence) {
+        // 하이라이트 밑줄 위치 조절
         const rect = viewport.convertToViewportRectangle([
-          item.transform[4],
-          item.transform[5] - item.height,
+          item.transform[4], 
+          item.transform[5] - item.height * 0.2, // 🔼 적절한 높이로 조정
           item.transform[4] + item.width,
-          item.transform[5],
+          item.transform[5] + item.height, // 🔼 위쪽 여유 공간 추가
         ]);
+             
         const left = Math.min(rect[0], rect[2]);
         const top = Math.min(rect[1], rect[3]);
-        const rectWidth = Math.abs(rect[2] - rect[0]);
-        const rectHeight = Math.abs(rect[3] - rect[1]);
+
+        // . , ' 등의 경우 최저 하이라이팅 크기 보장
+        const minHighlightHeight = 8; // 🔹 최소 높이 설정 (텍스트 크기가 작아도 일정한 높이 유지)
+        const minHighlightWidth = 4;  // 🔹 최소 너비 설정
+
+        const rectWidth = Math.max(Math.abs(rect[2] - rect[0]), minHighlightWidth);
+        const rectHeight = Math.max(Math.abs(rect[3] - rect[1]), minHighlightHeight);
 
         context.save();
-        context.globalAlpha = 0.3;
-        context.fillStyle = "rgba(255, 255, 0, 0.3)";
+        context.globalAlpha = 0.3; // 투명도 설정
+        context.fillStyle = color || "rgba(255, 255, 0, 0.3)"; // 기본값 노란색
         context.fillRect(left, top, rectWidth, rectHeight);
         context.restore();
       }
