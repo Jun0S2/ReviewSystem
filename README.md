@@ -17,8 +17,8 @@ SummaryAI processes a given PDF URL to:
 
 ## Upcoming Updates
 
-- [ ] Highlight cover letters
-- [ ] Recalculate (x, y) coordinates in full-screen mode
+- [x] Highlight cover letters
+- [x] Recalculate (x, y) coordinates in full-screen mode
 - [ ] Improve summary prompting
 - [ ] Support upload option for local PDF Files
 
