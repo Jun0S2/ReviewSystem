@@ -10,7 +10,7 @@ export default function PDFViewer({ pdfUrl, highlightedSentences, color }) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [scale, setScale] = useState(1.0);
   const [pdfDoc, setPdfDoc] = useState(null);
-  console.log(color);
+  console.log("pdf viewer" , color);
   // 📌 Parent Card의 width를 감지하여 scale 자동 조정
   useEffect(() => {
     const updateScale = () => {
