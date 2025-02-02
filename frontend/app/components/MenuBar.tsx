@@ -62,7 +62,7 @@ export default function MenuBar() {
           <div className="text-lg mb-3 font-bold text-center"> Generate New Summary</div>
           <Divider />
           <div className="p-5">
-              <PDFInput onSubmit={(e) => handleSubmit(e, navigate)} />
+              <PDFInput onSubmit={(e) => handleSubmit(e, navigate)} layoutType="stacked" />
           </div>    
       </div>
     </>

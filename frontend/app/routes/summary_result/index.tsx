@@ -21,8 +21,9 @@ export default function SummaryResultPage() {
   /**
    * Get PDF URL to display pdf viewer
    */
-  const { title, authors, summary, highlighted_sentences, pdf_url } = data;
-
+  // + ) color 값도 추가
+  const { title, authors, summary, highlighted_sentences, pdf_url, color } = data;
+  console.log("Received selected color : " , color);
   return (
     <>
       {/* 네비바 & 사이드바 추가 */}
@@ -48,16 +49,8 @@ export default function SummaryResultPage() {
             <Card className="md:col-span-3 w-full h-full flex flex-col">
               <CardBody className="p-10 overflow-y-auto overflow-scroll">
                   <div className="text-lg font-bold mb-4">PDF Viewer</div>
-                  <PDFViewer pdfUrl={pdf_url} highlightedSentences={highlighted_sentences} />
-
-                {/* <iframe
-                  src={pdf_url}
-                  width="100%"
-                  height="100%"
-                  style={{ border: 'none' }}
-                  title="PDF Viewer"
-                /> */}
-              </CardBody>
+                  {/* 선택한 색상 전달 */}
+                  <PDFViewer pdfUrl={pdf_url} highlightedSentences={highlighted_sentences} color={color} />              </CardBody>
             </Card>
 
             {/* Summary (2/5 비율) */}
