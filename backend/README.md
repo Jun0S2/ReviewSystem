@@ -3,6 +3,25 @@ pip install -r requirements.txt
 uvicorn main:app --reload
 ```
 
+# Directory
+
+```
+project/
+├── main.py
+├── db.py
+├── models.py
+├── utils.py         # 기존 PDF 처리 관련 유틸 함수들
+├── routers/
+│   ├── pdf.py       # PDF 관련 엔드포인트 (DB 저장/조회 + PDF 처리)
+│   └── user.py      # 사용자 관련 엔드포인트 (유저 생성, 조회, 유저- PDF 연관)
+└── requirements.txt
+
+```
+
+### API Lists
+
+http://127.0.0.1:8000/docs
+
 ### Requirements
 
 - fastapi

@@ -1,12 +1,12 @@
 import { jsx, jsxs, Fragment } from "react/jsx-runtime";
 import { PassThrough } from "node:stream";
 import { createReadableStreamFromReadable, json } from "@remix-run/node";
-import { RemixServer, Outlet, Meta, Links, ScrollRestoration, Scripts, useLocation, useFetcher } from "@remix-run/react";
+import { RemixServer, Outlet, Meta, Links, ScrollRestoration, Scripts, useLocation } from "@remix-run/react";
 import { isbot } from "isbot";
 import { renderToPipeableStream } from "react-dom/server";
 import { HeroUIProvider, Navbar, NavbarContent, NavbarMenuToggle, NavbarBrand, NavbarItem, Button, NavbarMenu, NavbarMenuItem, Card, CardHeader, Divider, CardBody, Form, Input, Select, SelectItem } from "@heroui/react";
 import dotenv from "dotenv";
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import * as pdfjsLib from "pdfjs-dist/build/pdf.mjs";
 const ABORT_DELAY = 5e3;
@@ -178,6 +178,8 @@ const route1 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProper
 const handleSubmit = async (event, navigate) => {
   event.preventDefault();
   const formData = new FormData(event.target);
+  const selectedColor = formData.get("color");
+  console.log("selected color : ", selectedColor);
   try {
     const response = await fetch("/api/generate-summary", {
       method: "POST",
@@ -187,7 +189,7 @@ const handleSubmit = async (event, navigate) => {
       throw new Error("Failed to fetch data from the backend");
     }
     const data = await response.json();
-    navigate("/summary_result", { state: data });
+    navigate("/summary_result", { state: { ...data, color: selectedColor } });
   } catch (error) {
     console.error("Error:", error);
     alert("An error occurred while processing the PDF.");
@@ -197,45 +199,72 @@ const route2 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProper
   __proto__: null,
   handleSubmit
 }, Symbol.toStringTag, { value: "Module" }));
-const PDFInput = ({ onSubmit, className }) => {
-  return /* @__PURE__ */ jsx("div", { children: /* @__PURE__ */ jsxs("form", { onSubmit, className: "space-y-4", children: [
-    /* @__PURE__ */ jsxs("div", { className: "flex flex-col space-y-2", children: [
-      /* @__PURE__ */ jsx("label", { htmlFor: "pdf_url", className: "font-semibold text-gray-600", children: "PDF URL" }),
-      /* @__PURE__ */ jsx(
-        "input",
-        {
-          type: "url",
-          name: "pdf_url",
-          id: "pdf_url",
-          required: true,
-          className: "p-3 border rounded-md shadow-sm border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none",
-          placeholder: "https://"
-        }
-      )
-    ] }),
-    /* @__PURE__ */ jsxs("div", { className: "flex flex-col space-y-2", children: [
-      /* @__PURE__ */ jsx("label", { htmlFor: "pdf_file", className: "font-semibold text-gray-600", children: "Or Upload PDF File (Not supported yet)" }),
-      /* @__PURE__ */ jsx(
-        "input",
-        {
-          disabled: true,
-          type: "file",
-          name: "pdf_file",
-          id: "pdf_file",
-          accept: ".pdf",
-          className: "p-3 border rounded-md shadow-sm border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-        }
-      )
-    ] }),
-    /* @__PURE__ */ jsx(
-      "button",
-      {
-        type: "submit",
-        className: "w-full py-3 text-white bg-blue-600 hover:bg-blue-700 rounded-lg font-medium",
-        children: "Upload"
-      }
-    )
-  ] }) });
+const colorPalette = [
+  { hex: "#c7e372", color: "green" },
+  { hex: "#ffc701", color: "yellow" },
+  { hex: "#ef5a68", color: "red" },
+  { hex: "#9ad0dc", color: "blue" },
+  { hex: "#c683ff", color: "purple" }
+];
+const PDFInput = ({ onSubmit, layoutType = "inline", className }) => {
+  const [selectedColor, setSelectedColor] = React.useState(colorPalette[0].hex);
+  return /* @__PURE__ */ jsx("div", { children: /* @__PURE__ */ jsxs(
+    "form",
+    {
+      onSubmit: (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        formData.append("color", selectedColor);
+        onSubmit(e);
+      },
+      className: "space-y-4",
+      children: [
+        /* @__PURE__ */ jsxs("div", { className: "flex flex-col space-y-2", children: [
+          /* @__PURE__ */ jsx("label", { htmlFor: "pdf_url", className: "font-semibold text-gray-600", children: "PDF URL" }),
+          /* @__PURE__ */ jsx(
+            "input",
+            {
+              type: "url",
+              name: "pdf_url",
+              id: "pdf_url",
+              required: true,
+              className: "p-3 border rounded-md shadow-sm border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none",
+              placeholder: "https://"
+            }
+          )
+        ] }),
+        /* @__PURE__ */ jsxs("div", { className: "flex flex-col space-y-2", children: [
+          /* @__PURE__ */ jsx("label", { htmlFor: "pdf_file", className: "font-semibold text-gray-600", children: "Or Upload PDF File (Not supported yet)" }),
+          /* @__PURE__ */ jsx(
+            "input",
+            {
+              disabled: true,
+              type: "file",
+              name: "pdf_file",
+              id: "pdf_file",
+              accept: ".pdf",
+              className: "p-3 border rounded-md shadow-sm border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            }
+          )
+        ] }),
+        /* @__PURE__ */ jsxs("div", { className: `w-full ${layoutType === "inline" ? "flex justify-between items-center" : "flex flex-col"}`, children: [
+          /* @__PURE__ */ jsx("label", { className: "font-semibold text-gray-600 whitespace-nowrap", children: "Theme" }),
+          /* @__PURE__ */ jsx("div", { className: `flex items-center ${layoutType === "inline" ? "space-x-3" : "gap-2 justify-start"} flex-wrap max-w-full`, children: colorPalette.map((color) => /* @__PURE__ */ jsx(
+            "button",
+            {
+              type: "button",
+              className: `w-8 h-8 rounded-full border-2 transition ${selectedColor === color.hex ? "border-gray-800 scale-110" : "border-gray-300"}`,
+              style: { backgroundColor: color.hex },
+              onClick: () => setSelectedColor(color.hex)
+            },
+            color.hex
+          )) })
+        ] }),
+        /* @__PURE__ */ jsx("input", { type: "hidden", name: "color", value: selectedColor }),
+        /* @__PURE__ */ jsx("button", { type: "submit", className: "w-full py-3 text-white bg-blue-600 hover:bg-blue-700 rounded-lg font-medium", children: "Upload" })
+      ]
+    }
+  ) });
 };
 function MenuBar() {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
@@ -254,29 +283,48 @@ function MenuBar() {
     /* @__PURE__ */ jsxs("div", { className: "hidden xl:block md:w-1/5 md:h-screen md:fixed md:left-0 md:top-[4rem] md:shadow-lg md:p-6", children: [
       /* @__PURE__ */ jsx("div", { className: "text-lg mb-3 font-bold text-center", children: " Generate New Summary" }),
       /* @__PURE__ */ jsx(Divider, {}),
-      /* @__PURE__ */ jsx("div", { className: "p-5", children: /* @__PURE__ */ jsx(PDFInput, { onSubmit: (e) => handleSubmit(e, navigate) }) })
+      /* @__PURE__ */ jsx("div", { className: "p-5", children: /* @__PURE__ */ jsx(PDFInput, { onSubmit: (e) => handleSubmit(e, navigate), layoutType: "stacked" }) })
     ] })
   ] });
 }
 pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.js";
-function PDFViewer({ pdfUrl, highlightedSentences }) {
+function PDFViewer({ pdfUrl, highlightedSentences, color }) {
   const containerRef = useRef(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [scale, setScale] = useState(1);
+  const [pdfDoc, setPdfDoc] = useState(null);
+  console.log("pdf viewer", color);
   useEffect(() => {
-    const renderPDF = async () => {
-      const loadingTask = pdfjsLib.getDocument(pdfUrl);
-      const pdf = await loadingTask.promise;
-      const numPages = pdf.numPages;
-      if (!containerRef.current) return;
-      containerRef.current.innerHTML = "";
-      for (let i = 1; i <= numPages; i++) {
-        const page = await pdf.getPage(i);
-        renderPage(page);
+    const updateScale = () => {
+      if (containerRef.current) {
+        const containerWidth = containerRef.current.clientWidth;
+        const newScale = containerWidth / 600;
+        setScale(newScale);
       }
     };
-    const renderPage = async (page) => {
-      const scale = isFullscreen ? 1.5 : 1;
+    updateScale();
+    const resizeObserver = new ResizeObserver(updateScale);
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current);
+    }
+    return () => {
+      if (containerRef.current) {
+        resizeObserver.unobserve(containerRef.current);
+      }
+    };
+  }, []);
+  useEffect(() => {
+    const loadingTask = pdfjsLib.getDocument(pdfUrl);
+    loadingTask.promise.then((pdf) => setPdfDoc(pdf));
+  }, [pdfUrl]);
+  const renderPage = useCallback(
+    async (page, pageIndex) => {
       const viewport = page.getViewport({ scale });
+      const existingPage = document.getElementById(`pdf-page-${pageIndex}`);
+      if (existingPage) existingPage.remove();
+      const pageWrapper = document.createElement("div");
+      pageWrapper.classList.add("page-container");
+      pageWrapper.id = `pdf-page-${pageIndex}`;
       const canvas = document.createElement("canvas");
       canvas.width = viewport.width;
       canvas.height = viewport.height;
@@ -285,34 +333,54 @@ function PDFViewer({ pdfUrl, highlightedSentences }) {
       await page.render(renderContext).promise;
       const textContent = await page.getTextContent();
       highlightText(textContent, context, viewport, highlightedSentences);
+      pageWrapper.appendChild(canvas);
       if (containerRef.current) {
-        const pageWrapper = document.createElement("div");
-        pageWrapper.classList.add("page-container");
-        pageWrapper.appendChild(canvas);
         containerRef.current.appendChild(pageWrapper);
       }
+    },
+    [scale, highlightedSentences]
+  );
+  useEffect(() => {
+    if (!pdfDoc) return;
+    if (containerRef.current) containerRef.current.innerHTML = "";
+    const renderAllPages = async () => {
+      for (let i = 1; i <= pdfDoc.numPages; i++) {
+        const page = await pdfDoc.getPage(i);
+        await renderPage(page, i);
+      }
     };
-    const highlightText = (textContent, context, viewport, highlightedSentences2) => {
-      textContent.items.forEach((item) => {
-        const normalizedText = normalizeText(item.str);
-        const matchedSentence = highlightedSentences2.find((h) => normalizeText(h).includes(normalizedText));
-        if (matchedSentence) {
-          const { transform, width, height } = item;
-          const [x, y] = transform.slice(4, 6);
-          const adjustedX = x * viewport.scale;
-          const adjustedY = (viewport.height - y) * viewport.scale - height / 2;
-          console.log(`🔍 Highlighting: ${normalizedText} (Matched: ${matchedSentence})`);
-          context.save();
-          context.globalAlpha = 0.4;
-          context.fillStyle = "yellow";
-          context.fillRect(adjustedX, adjustedY, width * viewport.scale, height);
-          context.restore();
-        }
-      });
-    };
-    const normalizeText = (text) => text.replace(/\n/g, " ").replace(/\s+/g, " ").trim();
-    renderPDF();
-  }, [pdfUrl, highlightedSentences, isFullscreen]);
+    renderAllPages();
+  }, [pdfDoc, scale, renderPage]);
+  const highlightText = (textContent, context, viewport, highlightedSentences2) => {
+    textContent.items.forEach((item) => {
+      const normalizedText = normalizeText(item.str);
+      const matchedSentence = highlightedSentences2.find(
+        (h) => normalizeText(h).includes(normalizedText)
+      );
+      if (matchedSentence) {
+        const rect = viewport.convertToViewportRectangle([
+          item.transform[4],
+          item.transform[5] - item.height * 0.2,
+          // 🔼 적절한 높이로 조정
+          item.transform[4] + item.width,
+          item.transform[5] + item.height
+          // 🔼 위쪽 여유 공간 추가
+        ]);
+        const left = Math.min(rect[0], rect[2]);
+        const top = Math.min(rect[1], rect[3]);
+        const minHighlightHeight = 8;
+        const minHighlightWidth = 4;
+        const rectWidth = Math.max(Math.abs(rect[2] - rect[0]), minHighlightWidth);
+        const rectHeight = Math.max(Math.abs(rect[3] - rect[1]), minHighlightHeight);
+        context.save();
+        context.globalAlpha = 0.3;
+        context.fillStyle = color || "rgba(255, 255, 0, 0.3)";
+        context.fillRect(left, top, rectWidth, rectHeight);
+        context.restore();
+      }
+    });
+  };
+  const normalizeText = (text) => text.replace(/\n/g, " ").replace(/\s+/g, " ").trim();
   return /* @__PURE__ */ jsxs("div", { className: `relative ${isFullscreen ? "fullscreen-mode" : "card-mode"}`, children: [
     /* @__PURE__ */ jsx("div", { ref: containerRef, className: "pdf-container" }),
     /* @__PURE__ */ jsx(
@@ -331,7 +399,8 @@ function SummaryResultPage() {
   if (!data) {
     return /* @__PURE__ */ jsx("div", { children: "Error: No data available" });
   }
-  const { title, authors, summary, highlighted_sentences, pdf_url } = data;
+  const { title, authors, summary, highlighted_sentences, pdf_url, color } = data;
+  console.log("Received selected color : ", color);
   return /* @__PURE__ */ jsx(Fragment, { children: /* @__PURE__ */ jsxs("div", { className: "min-h-screen md:h-screen flex flex-col", children: [
     /* @__PURE__ */ jsx(
       "div",
@@ -345,7 +414,8 @@ function SummaryResultPage() {
     /* @__PURE__ */ jsx("div", { className: "p-10 relative md:w-4/5 xl:ml-[20%] flex-grow md:h-[calc(100vh-80px)]", children: /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-1 md:grid-cols-5 gap-6 h-full", children: [
       /* @__PURE__ */ jsx(Card, { className: "md:col-span-3 w-full h-full flex flex-col", children: /* @__PURE__ */ jsxs(CardBody, { className: "p-10 overflow-y-auto overflow-scroll", children: [
         /* @__PURE__ */ jsx("div", { className: "text-lg font-bold mb-4", children: "PDF Viewer" }),
-        /* @__PURE__ */ jsx(PDFViewer, { pdfUrl: pdf_url, highlightedSentences: highlighted_sentences })
+        /* @__PURE__ */ jsx(PDFViewer, { pdfUrl: pdf_url, highlightedSentences: highlighted_sentences, color }),
+        "              "
       ] }) }),
       /* @__PURE__ */ jsx(Card, { className: "md:col-span-2 w-full h-full flex flex-col", children: /* @__PURE__ */ jsxs(CardBody, { className: "p-10 overflow-scroll", children: [
         /* @__PURE__ */ jsx("div", { className: "text-xl font-bold py-5", children: "Generated Summary" }),
@@ -402,31 +472,7 @@ const route4 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProper
   default: Index$1
 }, Symbol.toStringTag, { value: "Module" }));
 function SummaryPage() {
-  const fetcher = useFetcher();
   const navigate = useNavigate();
-  const handleSubmit2 = async (event) => {
-    event.preventDefault();
-    const formData = new FormData(event.target);
-    try {
-      const response = await fetch("/api/generate-summary", {
-        method: "POST",
-        body: formData
-      });
-      if (!response.ok) {
-        throw new Error("Failed to fetch data from the backend");
-      }
-      const data = await response.json();
-      navigate("/summary_result", { state: data });
-    } catch (error) {
-      console.error("Error:", error);
-      alert("An error occurred while processing the PDF.");
-    }
-  };
-  useEffect(() => {
-    if (fetcher.state === "idle" && fetcher.data) {
-      navigate("/summary_result", { state: fetcher.data });
-    }
-  }, [fetcher.state, fetcher.data, navigate]);
   return /* @__PURE__ */ jsxs("div", { className: "p-10 relative", children: [
     /* @__PURE__ */ jsx(
       "div",
@@ -438,7 +484,7 @@ function SummaryPage() {
     ),
     /* @__PURE__ */ jsxs("div", { className: "flex flex-col justify-center items-center h-[100vh]", children: [
       /* @__PURE__ */ jsx("div", { className: "text-4xl font-bold mb-8 text-center", children: "Generate Summary" }),
-      /* @__PURE__ */ jsx(Card, { className: "w-full max-w-xl p-6 shadow-lg bg-white rounded-lg border border-gray-200", children: /* @__PURE__ */ jsx(CardBody, { children: /* @__PURE__ */ jsx(PDFInput, { onSubmit: (e) => handleSubmit2(e) }) }) })
+      /* @__PURE__ */ jsx(Card, { className: "w-full max-w-xl p-6 shadow-lg bg-white rounded-lg border border-gray-200", children: /* @__PURE__ */ jsx(CardBody, { children: /* @__PURE__ */ jsx(PDFInput, { onSubmit: (e) => handleSubmit(e, navigate), layoutType: "inline" }) }) })
     ] })
   ] });
 }
@@ -612,7 +658,7 @@ const route6 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProper
   __proto__: null,
   default: Index
 }, Symbol.toStringTag, { value: "Module" }));
-const serverManifest = { "entry": { "module": "/assets/entry.client-CK2Q56Wc.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/index-C_mK7mVM.js", "/assets/components-BsOMTYD6.js"], "css": [] }, "routes": { "root": { "id": "root", "parentId": void 0, "path": "", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": true, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/root-Dt19yfgG.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/index-C_mK7mVM.js", "/assets/components-BsOMTYD6.js", "/assets/filter-props-x3ph258H.js", "/assets/context-DVEV0D0Z.js", "/assets/GlobalConfig-BfVCAYU5.js"], "css": ["/assets/root-C-wuWg2Q.css"] }, "routes/api.generate-summary": { "id": "routes/api.generate-summary", "parentId": "root", "path": "api/generate-summary", "index": void 0, "caseSensitive": void 0, "hasAction": true, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/api.generate-summary-l0sNRNKZ.js", "imports": [], "css": [] }, "routes/api.form-handler": { "id": "routes/api.form-handler", "parentId": "root", "path": "api/form-handler", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/api.form-handler-l0sNRNKZ.js", "imports": [], "css": [] }, "routes/summary_result": { "id": "routes/summary_result", "parentId": "root", "path": "summary_result", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/index-CRXsJk8N.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/PDFInput-C6DAQmJI.js", "/assets/index-C_mK7mVM.js", "/assets/chunk-5PILOUBS-3rhuKQb0.js", "/assets/filter-props-x3ph258H.js", "/assets/chunk-D5XJWRAV-IQwIPW1b.js"], "css": ["/assets/index-BxJvkBVK.css"] }, "routes/layout._index": { "id": "routes/layout._index", "parentId": "root", "path": "layout", "index": true, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/layout._index-CqYo8wUb.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/chunk-5PILOUBS-3rhuKQb0.js", "/assets/filter-props-x3ph258H.js"], "css": [] }, "routes/summary": { "id": "routes/summary", "parentId": "root", "path": "summary", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/index-DyarRaV0.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/PDFInput-C6DAQmJI.js", "/assets/components-BsOMTYD6.js", "/assets/index-C_mK7mVM.js", "/assets/chunk-5PILOUBS-3rhuKQb0.js", "/assets/filter-props-x3ph258H.js"], "css": [] }, "routes/_index": { "id": "routes/_index", "parentId": "root", "path": void 0, "index": true, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/_index-9ySD4fQg.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/index-C_mK7mVM.js", "/assets/chunk-5PILOUBS-3rhuKQb0.js", "/assets/filter-props-x3ph258H.js", "/assets/chunk-D5XJWRAV-IQwIPW1b.js", "/assets/context-DVEV0D0Z.js"], "css": [] } }, "url": "/assets/manifest-e21db75f.js", "version": "e21db75f" };
+const serverManifest = { "entry": { "module": "/assets/entry.client-NfEINkjJ.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/index-BLPPaW__.js", "/assets/index-ibzTEksl.js", "/assets/components-tRXhihAw.js"], "css": [] }, "routes": { "root": { "id": "root", "parentId": void 0, "path": "", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": true, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/root-CRlSIqda.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/index-BLPPaW__.js", "/assets/index-ibzTEksl.js", "/assets/components-tRXhihAw.js", "/assets/filter-props-x3ph258H.js", "/assets/context-DVEV0D0Z.js", "/assets/GlobalConfig-BfVCAYU5.js"], "css": ["/assets/root-Dj8rA66w.css"] }, "routes/api.generate-summary": { "id": "routes/api.generate-summary", "parentId": "root", "path": "api/generate-summary", "index": void 0, "caseSensitive": void 0, "hasAction": true, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/api.generate-summary-l0sNRNKZ.js", "imports": [], "css": [] }, "routes/api.form-handler": { "id": "routes/api.form-handler", "parentId": "root", "path": "api/form-handler", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/api.form-handler-l0sNRNKZ.js", "imports": [], "css": [] }, "routes/summary_result": { "id": "routes/summary_result", "parentId": "root", "path": "summary_result", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/index-DSAd2pE-.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/PDFInput-CwnGYMgy.js", "/assets/index-ibzTEksl.js", "/assets/chunk-5PILOUBS-3rhuKQb0.js", "/assets/filter-props-x3ph258H.js", "/assets/chunk-D5XJWRAV-TK7B16Pg.js", "/assets/index-BLPPaW__.js"], "css": ["/assets/index-BxJvkBVK.css"] }, "routes/layout._index": { "id": "routes/layout._index", "parentId": "root", "path": "layout", "index": true, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/layout._index-CqYo8wUb.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/chunk-5PILOUBS-3rhuKQb0.js", "/assets/filter-props-x3ph258H.js"], "css": [] }, "routes/summary": { "id": "routes/summary", "parentId": "root", "path": "summary", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/index-DeliyGHO.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/PDFInput-CwnGYMgy.js", "/assets/index-ibzTEksl.js", "/assets/chunk-5PILOUBS-3rhuKQb0.js", "/assets/filter-props-x3ph258H.js"], "css": [] }, "routes/_index": { "id": "routes/_index", "parentId": "root", "path": void 0, "index": true, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/_index-DUpp9RUo.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/index-ibzTEksl.js", "/assets/chunk-5PILOUBS-3rhuKQb0.js", "/assets/filter-props-x3ph258H.js", "/assets/chunk-D5XJWRAV-TK7B16Pg.js", "/assets/context-DVEV0D0Z.js", "/assets/index-BLPPaW__.js"], "css": [] } }, "url": "/assets/manifest-5ef7d9f6.js", "version": "5ef7d9f6" };
 const mode = "production";
 const assetsBuildDirectory = "build/client";
 const basename = "/";
