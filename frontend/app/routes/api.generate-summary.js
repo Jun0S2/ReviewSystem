@@ -7,17 +7,25 @@ export async function action({ request }) {
   const formData = await request.formData();
   const pdf_url = formData.get("pdf_url");
 
+  console.log("Extracted pdf_url:", pdf_url); // Log the extracted pdf_url
+
   const baseBackendUrl = process.env.BACKEND_URL || "http://localhost:8000";
-  const useTestMode = process.env.USE_TEST_MODE === "true";
-  const endpoint = useTestMode ? "/process-pdf-test" : "/process-pdf";
+  const endpoint = "/process-pdf-with-user";
   const backendUrl = `${baseBackendUrl}${endpoint}`;
+
+  const payload = {
+    pdf_url,
+    user_email: "admin@gmail.com",
+  };
+
+  console.log("Payload being sent:", payload); // Log the payload
 
   const response = await fetch(backendUrl, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ pdf_url }),
+    body: JSON.stringify(payload),
   });
 
   if (!response.ok) {
@@ -25,6 +33,5 @@ export async function action({ request }) {
   }
 
   const data = await response.json();
-  // return data; // Return the data directly
   return json(data);
 }

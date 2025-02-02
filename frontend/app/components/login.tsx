@@ -25,6 +25,9 @@ export default function App() {
     if (passwordError) {
       newErrors.password = passwordError;
     }
+    // test 
+    navigate("/summary");
+    return;
 
     // Username validation
     if (data.name === "admin" && data.password === "admin") {

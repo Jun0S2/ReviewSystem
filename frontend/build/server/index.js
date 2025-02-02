@@ -156,14 +156,19 @@ async function action({ request }) {
   const formData = await request.formData();
   const pdf_url = formData.get("pdf_url");
   const baseBackendUrl = "http://localhost:8000";
-  const endpoint = "/process-pdf-test";
+  const endpoint = "/process-pdf-with-user";
   const backendUrl = `${baseBackendUrl}${endpoint}`;
+  const payload = {
+    pdf_url,
+    user_email: "admin@gmail.com"
+    // 추가 정보(예: color)가 있다면 여기에 포함
+  };
   const response = await fetch(backendUrl, {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
     },
-    body: JSON.stringify({ pdf_url })
+    body: JSON.stringify(payload)
   });
   if (!response.ok) {
     throw new Error("Failed to fetch data from the backend");
@@ -178,8 +183,6 @@ const route1 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProper
 const handleSubmit = async (event, navigate) => {
   event.preventDefault();
   const formData = new FormData(event.target);
-  const selectedColor = formData.get("color");
-  console.log("selected color : ", selectedColor);
   try {
     const response = await fetch("/api/generate-summary", {
       method: "POST",
@@ -189,7 +192,7 @@ const handleSubmit = async (event, navigate) => {
       throw new Error("Failed to fetch data from the backend");
     }
     const data = await response.json();
-    navigate("/summary_result", { state: { ...data, color: selectedColor } });
+    navigate("/summary_result", { state: data });
   } catch (error) {
     console.error("Error:", error);
     alert("An error occurred while processing the PDF.");
@@ -658,7 +661,7 @@ const route6 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProper
   __proto__: null,
   default: Index
 }, Symbol.toStringTag, { value: "Module" }));
-const serverManifest = { "entry": { "module": "/assets/entry.client-NfEINkjJ.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/index-BLPPaW__.js", "/assets/index-ibzTEksl.js", "/assets/components-tRXhihAw.js"], "css": [] }, "routes": { "root": { "id": "root", "parentId": void 0, "path": "", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": true, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/root-CRlSIqda.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/index-BLPPaW__.js", "/assets/index-ibzTEksl.js", "/assets/components-tRXhihAw.js", "/assets/filter-props-x3ph258H.js", "/assets/context-DVEV0D0Z.js", "/assets/GlobalConfig-BfVCAYU5.js"], "css": ["/assets/root-Dj8rA66w.css"] }, "routes/api.generate-summary": { "id": "routes/api.generate-summary", "parentId": "root", "path": "api/generate-summary", "index": void 0, "caseSensitive": void 0, "hasAction": true, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/api.generate-summary-l0sNRNKZ.js", "imports": [], "css": [] }, "routes/api.form-handler": { "id": "routes/api.form-handler", "parentId": "root", "path": "api/form-handler", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/api.form-handler-l0sNRNKZ.js", "imports": [], "css": [] }, "routes/summary_result": { "id": "routes/summary_result", "parentId": "root", "path": "summary_result", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/index-DSAd2pE-.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/PDFInput-CwnGYMgy.js", "/assets/index-ibzTEksl.js", "/assets/chunk-5PILOUBS-3rhuKQb0.js", "/assets/filter-props-x3ph258H.js", "/assets/chunk-D5XJWRAV-TK7B16Pg.js", "/assets/index-BLPPaW__.js"], "css": ["/assets/index-BxJvkBVK.css"] }, "routes/layout._index": { "id": "routes/layout._index", "parentId": "root", "path": "layout", "index": true, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/layout._index-CqYo8wUb.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/chunk-5PILOUBS-3rhuKQb0.js", "/assets/filter-props-x3ph258H.js"], "css": [] }, "routes/summary": { "id": "routes/summary", "parentId": "root", "path": "summary", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/index-DeliyGHO.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/PDFInput-CwnGYMgy.js", "/assets/index-ibzTEksl.js", "/assets/chunk-5PILOUBS-3rhuKQb0.js", "/assets/filter-props-x3ph258H.js"], "css": [] }, "routes/_index": { "id": "routes/_index", "parentId": "root", "path": void 0, "index": true, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/_index-DUpp9RUo.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/index-ibzTEksl.js", "/assets/chunk-5PILOUBS-3rhuKQb0.js", "/assets/filter-props-x3ph258H.js", "/assets/chunk-D5XJWRAV-TK7B16Pg.js", "/assets/context-DVEV0D0Z.js", "/assets/index-BLPPaW__.js"], "css": [] } }, "url": "/assets/manifest-5ef7d9f6.js", "version": "5ef7d9f6" };
+const serverManifest = { "entry": { "module": "/assets/entry.client-NfEINkjJ.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/index-BLPPaW__.js", "/assets/index-ibzTEksl.js", "/assets/components-tRXhihAw.js"], "css": [] }, "routes": { "root": { "id": "root", "parentId": void 0, "path": "", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": true, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/root-CRlSIqda.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/index-BLPPaW__.js", "/assets/index-ibzTEksl.js", "/assets/components-tRXhihAw.js", "/assets/filter-props-x3ph258H.js", "/assets/context-DVEV0D0Z.js", "/assets/GlobalConfig-BfVCAYU5.js"], "css": ["/assets/root-Dj8rA66w.css"] }, "routes/api.generate-summary": { "id": "routes/api.generate-summary", "parentId": "root", "path": "api/generate-summary", "index": void 0, "caseSensitive": void 0, "hasAction": true, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/api.generate-summary-l0sNRNKZ.js", "imports": [], "css": [] }, "routes/api.form-handler": { "id": "routes/api.form-handler", "parentId": "root", "path": "api/form-handler", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/api.form-handler-l0sNRNKZ.js", "imports": [], "css": [] }, "routes/summary_result": { "id": "routes/summary_result", "parentId": "root", "path": "summary_result", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/index-OtTusTtE.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/PDFInput-C1jS92Bf.js", "/assets/index-ibzTEksl.js", "/assets/chunk-5PILOUBS-3rhuKQb0.js", "/assets/filter-props-x3ph258H.js", "/assets/chunk-D5XJWRAV-TK7B16Pg.js", "/assets/index-BLPPaW__.js"], "css": ["/assets/index-BxJvkBVK.css"] }, "routes/layout._index": { "id": "routes/layout._index", "parentId": "root", "path": "layout", "index": true, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/layout._index-CqYo8wUb.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/chunk-5PILOUBS-3rhuKQb0.js", "/assets/filter-props-x3ph258H.js"], "css": [] }, "routes/summary": { "id": "routes/summary", "parentId": "root", "path": "summary", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/index-DvRYxq_O.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/PDFInput-C1jS92Bf.js", "/assets/index-ibzTEksl.js", "/assets/chunk-5PILOUBS-3rhuKQb0.js", "/assets/filter-props-x3ph258H.js"], "css": [] }, "routes/_index": { "id": "routes/_index", "parentId": "root", "path": void 0, "index": true, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/_index-DUpp9RUo.js", "imports": ["/assets/jsx-runtime-DaIX84cV.js", "/assets/index-ibzTEksl.js", "/assets/chunk-5PILOUBS-3rhuKQb0.js", "/assets/filter-props-x3ph258H.js", "/assets/chunk-D5XJWRAV-TK7B16Pg.js", "/assets/context-DVEV0D0Z.js", "/assets/index-BLPPaW__.js"], "css": [] } }, "url": "/assets/manifest-3cc9fe32.js", "version": "3cc9fe32" };
 const mode = "production";
 const assetsBuildDirectory = "build/client";
 const basename = "/";
