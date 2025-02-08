@@ -13,7 +13,7 @@ import {
   
   import { useState } from "react";
   import { MessageIcon } from "./icons/MessageIcon";
-
+  import QNAImage from "../../public/qna.png"
   export default function App() {
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const [messages, setMessages] = useState([
@@ -98,9 +98,9 @@ import {
                       isZoomed
                       alt="Question image"
                       className="aspect-square w-full hover:scale-110"
-                      height={40}
-                      src="https://nextuipro.nyc3.cdn.digitaloceanspaces.com/components-images/places/san-francisco.png"
-                    />
+                      height={100}
+                      src={QNAImage}
+                       />
                   </div>
                   <div className="flex flex-col gap-2 py-4">
                     <h1 className="text-2xl font-bold leading-7">Ask AI about this PDF</h1>
