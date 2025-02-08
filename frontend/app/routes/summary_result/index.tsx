@@ -3,6 +3,7 @@ import { Card, CardBody, CardHeader, Divider, Button } from "@heroui/react";
 import { useLocation } from "@remix-run/react";
 import MenuBar from "~/components/MenuBar";
 import PDFViewer from "~/components/PDFViewer";
+import ChatComponent from "~/components/ChatComponent";
 import { useState } from "react";
 export default function SummaryResultPage() {
 /**
@@ -42,7 +43,8 @@ export default function SummaryResultPage() {
 
         {/* 메뉴바 */}
         <MenuBar />
-
+        {/* 체팅 아이콘 */}
+        <ChatComponent /> 
         {/* 메인 콘텐츠 */}
         <div className="p-10 relative md:w-4/5 xl:ml-[20%] flex-grow md:h-[calc(100vh-80px)]">
           {/* 3:2 레이아웃 적용 */}

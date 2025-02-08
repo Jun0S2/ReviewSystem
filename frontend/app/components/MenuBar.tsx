@@ -16,7 +16,6 @@ import {
 import PDFInput from "./PDFInput";
 import { useNavigate } from "react-router-dom";
 import { handleSubmit } from "../routes/api.form-handler";
-
 export default function MenuBar() {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const navigate = useNavigate();
