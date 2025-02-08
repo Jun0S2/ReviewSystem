@@ -13,7 +13,7 @@ import {
   
   import { useState } from "react";
   import { MessageIcon } from "./icons/MessageIcon";
-  
+
   export default function App() {
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const [messages, setMessages] = useState([
@@ -40,18 +40,20 @@ import {
     return (
       <>
         {/* Floating Button */}
-        <Button
-            isIconOnly
-            aria-label="Chat with AI"
-            color="danger"
-            size="lg"
-            radius="full"
-            variant="flat"
-            onPress={onOpen}
-            className="fixed bottom-5 left-5 z-50 shadow-lg"  
-        >
-            <MessageIcon />
-        </Button>
+        <Tooltip content="Ask AI if you have any questions">
+          <Button
+              isIconOnly
+              aria-label="Chat with AI"
+              color="danger"
+              size="lg"
+              radius="full"
+              variant="flat"
+              onPress={onOpen}
+              className="fixed bottom-5 left-5 z-50 shadow-lg"  
+          >
+              <MessageIcon />
+          </Button>
+        </Tooltip>
         <Drawer
           hideCloseButton
           backdrop="blur"

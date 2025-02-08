@@ -1,5 +1,5 @@
 import { useLoaderData } from "@remix-run/react";
-import { Card, CardBody, CardHeader, Divider, Button } from "@heroui/react";
+import { Card, CardBody, CardHeader, Divider, Button, Tooltip } from "@heroui/react";
 import { useLocation } from "@remix-run/react";
 import MenuBar from "~/components/MenuBar";
 import PDFViewer from "~/components/PDFViewer";
@@ -54,13 +54,15 @@ export default function SummaryResultPage() {
               <CardHeader className="flex justify-between items-center">
                 <div className="text-lg font-bold">PDF Viewer</div>
                 {/* 전체 화면 모드 전환 버튼 */}
-                <Button 
-                  color="danger" 
-                  variant="flat"
-                  onClick={() => setIsFullscreen(!isFullscreen)}
-                >
-                  {isFullscreen ? "Exit Fullscreen" : "FullScreen"}
-                </Button>
+                <Tooltip content="View Full Screen">
+                  <Button 
+                    color="danger" 
+                    variant="flat"
+                    onPress={() => setIsFullscreen(!isFullscreen)}
+                  >
+                    {isFullscreen ? "Exit Fullscreen" : "FullScreen"}
+                  </Button>
+                </Tooltip>
                 </CardHeader>
               <Divider/>
               <CardBody className="p-10 overflow-y-auto overflow-scroll">

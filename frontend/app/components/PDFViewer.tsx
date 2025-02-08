@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import * as pdfjsLib from "pdfjs-dist/build/pdf";
 import "pdfjs-dist/web/pdf_viewer.css";
+import { Button } from "@heroui/react";
 
 // pdf.js Worker 설정
 pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.js";
@@ -137,12 +138,12 @@ export default function PDFViewer({ pdfUrl, highlightedSentences, color, isFulls
       <div ref={containerRef} className="pdf-container"></div>
       {/* 전체 화면 모드일 때 Exit Fullscreen 버튼 표시 */}
       {isFullscreen && (
-        <button 
+        <Button 
           className="floating-btn"
-          onClick={() => setIsFullscreen(false)}
+          onPress={() => setIsFullscreen(false)}
         >
           Exit Fullscreen
-        </button>
+        </Button>
       )}
     </div>
   );

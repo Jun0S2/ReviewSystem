@@ -54,7 +54,7 @@ const PDFInput: React.FC<PDFInputProps> = ({ onSubmit, layoutType = "inline", cl
 
         {/* 🎨 색상 선택 */}
         <div className={`w-full ${layoutType === "inline" ? "flex justify-between items-center" : "flex flex-col"}`}>
-          <label className="font-semibold text-gray-600 whitespace-nowrap">Theme</label>
+          <label className="font-semibold text-gray-600 whitespace-nowrap">Highlight</label>
           <div className={`flex items-center ${layoutType === "inline" ? "space-x-3" : "gap-2 justify-start"} flex-wrap max-w-full`}>
             {colorPalette.map((color) => (
               <button
