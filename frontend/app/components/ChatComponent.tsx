@@ -44,12 +44,12 @@ import {
           <Button
               isIconOnly
               aria-label="Chat with AI"
-              color="danger"
+              color="primary"
               size="lg"
               radius="full"
-              variant="flat"
+              variant="shadow"
               onPress={onOpen}
-              className="fixed bottom-5 left-5 z-50 shadow-lg"  
+              className="fixed bottom-5 left-5 z-50"
           >
               <MessageIcon />
           </Button>

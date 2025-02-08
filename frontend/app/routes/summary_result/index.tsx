@@ -5,6 +5,8 @@ import MenuBar from "~/components/MenuBar";
 import PDFViewer from "~/components/PDFViewer";
 import ChatComponent from "~/components/ChatComponent";
 import { FileIcon } from "~/components/icons/FileIcon";
+import { ExpandIcon } from "~/components/icons/ExpandIcon";
+import {CollapseIcon} from "~/components/icons/CollapseIcon";
 import { useState } from "react";
 export default function SummaryResultPage() {
 /**
@@ -38,16 +40,17 @@ export default function SummaryResultPage() {
           style={{ backgroundImage: `url('https://bg.ibelick.com/')` }}
         >
           <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px]">
-            <div className="absolute left-0 right-0 top-0 -z-10 m-auto h-[310px] w-[310px] rounded-full bg-fuchsia-400 opacity-20 blur-[100px]"></div>
+            <div className="absolute left-0 right-0 top-0 -z-10 m-auto h-[310px] w-[310px] rounded-full bg-zinc-400 opacity-20 blur-[100px]"></div>
           </div>
-        </div>
+        </div> 
 
         {/* 메뉴바 */}
         <MenuBar />
         {/* 체팅 아이콘 */}
         <ChatComponent /> 
         {/* 메인 콘텐츠 */}
-        <div className="p-10 relative md:w-4/5 xl:ml-[20%] flex-grow md:h-[calc(100vh-80px)]">
+        <div className="p-10 relative md:w-4/5 xl:ml-[20%] flex-grow md:h-[calc(100vh-80px)]
+                        bg-gradient-to-tl from-blue-50 to-zinc-50">
           {/* 3:2 레이아웃 적용 */}
           <div className="grid grid-cols-1 md:grid-cols-5 gap-6 h-full">
             {/* PDF Viewer (3/5 비율) */}
@@ -56,13 +59,27 @@ export default function SummaryResultPage() {
                 <div className="text-lg font-bold">PDF Viewer</div>
                 {/* 전체 화면 모드 전환 버튼 */}
                 <Tooltip content="View Full Screen">
+                  {/* ExpandIcon */}
                   <Button 
-                    color="danger" 
-                    variant="flat"
+                    isIconOnly
+                    color="default" 
+                    variant="ghost"
+                    size="sm"
                     onPress={() => setIsFullscreen(!isFullscreen)}
-                  >
-                    {isFullscreen ? "Exit Fullscreen" : "FullScreen"}
-                  </Button>
+                    className="flex items-center"  // 아이콘과 텍스트 간격 설정
+                   >
+                    {/* 아이콘 */}
+                    {isFullscreen ? (
+                      <>
+                        <CollapseIcon />  {/* 전체 화면일 때 축소 아이콘 */}
+                        Exit Fullscreen
+                      </>
+                    ) : (
+                      <>
+                        <ExpandIcon/>  {/* 전체 화면 전환 아이콘 */}
+                      </>
+                    )}
+                    </Button>
                 </Tooltip>
                 </CardHeader>
               <Divider/>
