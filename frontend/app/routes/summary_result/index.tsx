@@ -1,9 +1,10 @@
 import { useLoaderData } from "@remix-run/react";
-import { Card, CardBody, CardHeader, Divider, Button, Tooltip } from "@heroui/react";
+import { Card, CardBody, CardHeader, Divider, Button, Tooltip, Link, Avatar } from "@heroui/react";
 import { useLocation } from "@remix-run/react";
 import MenuBar from "~/components/MenuBar";
 import PDFViewer from "~/components/PDFViewer";
 import ChatComponent from "~/components/ChatComponent";
+import { FileIcon } from "~/components/icons/FileIcon";
 import { useState } from "react";
 export default function SummaryResultPage() {
 /**
@@ -79,15 +80,38 @@ export default function SummaryResultPage() {
 
             {/* Summary (2/5 비율) */}
             <Card className="md:col-span-2 w-full h-full flex flex-col">
-              <CardBody className="p-10 overflow-scroll">
-                <div className="text-xl font-bold py-5">Generated Summary</div>
-                <div className="text-md font-bold">Title: {title || "Unknown Title"}</div>
-                <div className="">pdf url : {pdf_url} </div>
-                <div className="text-sm font">
-                  Authors: {authors.length > 0 ? authors.join(", ") : "Unknown Authors"}
-                </div>
-                <Divider/>
 
+            <CardBody>
+            {/* Title */}
+            <div className="text-md font-bold mb-4">Title: {title || "Unknown Title"}</div>
+
+            {/* PDF URL with Icon */}
+            <div className="flex items-center gap-2 mb-3">
+              {/* 파일 아이콘 */}
+             <FileIcon/>
+
+              {/* PDF URL 링크 */}
+              <Link isExternal showAnchorIcon color="foreground" href={pdf_url} className="text-sm text-blue-500">
+                {pdf_url}
+              </Link>
+            </div>
+
+            {/* Authors with Avatar Icon */}
+            <div className="flex items-center gap-2 mb-3">
+              {/* 아바타 아이콘 */}
+              <Avatar 
+                showFallback 
+                src="https://images.unsplash.com/broken" 
+                className="w-6 h-6" 
+              />
+
+              {/* Authors */}
+              <div className="text-sm text-gray-700">
+                {authors.length > 0 ? authors.join(", ") : "Unknown Authors"}
+              </div>
+            </div>
+
+            <Divider />
                 <div className="text-lg font-bold py-5">Summary</div>
                 <div className="text-md">{summary || "No summary available."}</div>
 
