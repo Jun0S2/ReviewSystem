@@ -40,7 +40,7 @@ const PDFInput: React.FC<PDFInputProps> = ({ onSubmit, layoutType = "inline", cl
           />
         </div>
 
-        <div className="flex flex-col space-y-2">
+        {/* <div className="flex flex-col space-y-2">
           <label htmlFor="pdf_file" className="font-semibold text-gray-600">Or Upload PDF File (Not supported yet)</label>
           <input
             disabled
@@ -50,7 +50,7 @@ const PDFInput: React.FC<PDFInputProps> = ({ onSubmit, layoutType = "inline", cl
             accept=".pdf"
             className="p-3 border rounded-md shadow-sm border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />
-        </div>
+        </div> */}
 
         {/* 🎨 색상 선택 */}
         <div className={`w-full ${layoutType === "inline" ? "flex justify-between items-center" : "flex flex-col"}`}>

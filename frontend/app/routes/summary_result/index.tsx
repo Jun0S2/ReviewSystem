@@ -1,9 +1,9 @@
 import { useLoaderData } from "@remix-run/react";
-import { Card, CardBody, Divider } from "@heroui/react";
+import { Card, CardBody, CardHeader, Divider, Button } from "@heroui/react";
 import { useLocation } from "@remix-run/react";
 import MenuBar from "~/components/MenuBar";
 import PDFViewer from "~/components/PDFViewer";
-
+import { useState } from "react";
 export default function SummaryResultPage() {
 /**
  * @description
@@ -15,6 +15,8 @@ export default function SummaryResultPage() {
  */
   const location = useLocation();
   const data = location.state;
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
   if (!data) {
     return <div>Error: No data available</div>;
   }
@@ -47,10 +49,28 @@ export default function SummaryResultPage() {
           <div className="grid grid-cols-1 md:grid-cols-5 gap-6 h-full">
             {/* PDF Viewer (3/5 비율) */}
             <Card className="md:col-span-3 w-full h-full flex flex-col">
+              <CardHeader className="flex justify-between items-center">
+                <div className="text-lg font-bold">PDF Viewer</div>
+                {/* 전체 화면 모드 전환 버튼 */}
+                <Button 
+                  color="danger" 
+                  variant="flat"
+                  onClick={() => setIsFullscreen(!isFullscreen)}
+                >
+                  {isFullscreen ? "Exit Fullscreen" : "FullScreen"}
+                </Button>
+                </CardHeader>
+              <Divider/>
               <CardBody className="p-10 overflow-y-auto overflow-scroll">
-                  <div className="text-lg font-bold mb-4">PDF Viewer</div>
-                  {/* 선택한 색상 전달 */}
-                  <PDFViewer pdfUrl={pdf_url} highlightedSentences={highlighted_sentences} color={color} />              </CardBody>
+                  {/* 선택한 색상 전달, fullscreen 여부*/}
+                    <PDFViewer 
+                      pdfUrl={pdf_url} 
+                      highlightedSentences={highlighted_sentences} 
+                      color={color}
+                      isFullscreen={isFullscreen}
+                      setIsFullscreen={setIsFullscreen}
+                  />
+                </CardBody>
             </Card>
 
             {/* Summary (2/5 비율) */}

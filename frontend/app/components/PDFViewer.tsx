@@ -5,12 +5,13 @@ import "pdfjs-dist/web/pdf_viewer.css";
 // pdf.js Worker 설정
 pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.js";
 
-export default function PDFViewer({ pdfUrl, highlightedSentences, color }) {
+export default function PDFViewer({ pdfUrl, highlightedSentences, color, isFullscreen, setIsFullscreen }) {
   const containerRef = useRef(null);
-  const [isFullscreen, setIsFullscreen] = useState(false);
+  // const [isFullscreen, setIsFullscreen] = useState(false);
   const [scale, setScale] = useState(1.0);
   const [pdfDoc, setPdfDoc] = useState(null);
   console.log("pdf viewer" , color);
+
   // 📌 Parent Card의 width를 감지하여 scale 자동 조정
   useEffect(() => {
     const updateScale = () => {
@@ -134,12 +135,15 @@ export default function PDFViewer({ pdfUrl, highlightedSentences, color }) {
   return (
     <div className={`relative ${isFullscreen ? "fullscreen-mode" : "card-mode"}`}>
       <div ref={containerRef} className="pdf-container"></div>
-      <button
-        onClick={() => setIsFullscreen(!isFullscreen)}
-        className="floating-btn"
-      >
-        {isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
-      </button>
+      {/* 전체 화면 모드일 때 Exit Fullscreen 버튼 표시 */}
+      {isFullscreen && (
+        <button 
+          className="floating-btn"
+          onClick={() => setIsFullscreen(false)}
+        >
+          Exit Fullscreen
+        </button>
+      )}
     </div>
   );
 }
