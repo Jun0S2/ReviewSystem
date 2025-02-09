@@ -41,6 +41,7 @@ import {
       <>
         {/* Floating Button */}
         <Tooltip content="Ask AI if you have any questions">
+          {/* z-[1100] : PDF Viewer 보다 위에 오도록 조정 */}
           <Button
               isIconOnly
               aria-label="Chat with AI"
@@ -49,24 +50,27 @@ import {
               radius="full"
               variant="shadow"
               onPress={onOpen}
-              className="fixed bottom-5 left-5 z-50"
+              className="fixed bottom-5 left-5 z-[1100]" 
           >
               <MessageIcon />
           </Button>
         </Tooltip>
+        {/* Drawer 의 z 속성 추가하여, pdf viewer 위에 오도록 함 */}
         <Drawer
           hideCloseButton
-          backdrop="blur"
+          backdrop="opaque"
+          // backdrop="blur"
           classNames={{
-            base: "data-[placement=right]:sm:m-2 data-[placement=left]:sm:m-2 rounded-medium"
+            base: "data-[placement=right]:sm:m-2 data-[placement=left]:sm:m-2 rounded-medium z-[9999] fixed" 
           }}
           isOpen={isOpen}
           onOpenChange={onOpenChange}
         >
-          <DrawerContent>
-            {(onClose) => (
+        <div className="z-[10001] relative">
+        <DrawerContent className="z-[10000] fixed bg-white h-[100vh] overflow-y-auto">
+        {(onClose) => (
               <>
-                <DrawerHeader className="absolute top-0 inset-x-0 z-50 flex flex-row gap-2 px-2 py-2 border-b border-default-200/50 justify-between bg-content1/50 backdrop-saturate-150 backdrop-blur-lg">
+                <DrawerHeader className="absolute top-0 inset-x-0 z-[10000] flex flex-row gap-2 px-2 py-2 border-b border-default-200/50 justify-between bg-content1/50 backdrop-saturate-150 backdrop-blur-lg">
                   <Tooltip content="Close">
                     <Button
                       isIconOnly
@@ -138,6 +142,7 @@ import {
               </>
             )}
           </DrawerContent>
+          </div>
         </Drawer>
       </>
     );

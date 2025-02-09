@@ -7,6 +7,7 @@ SummaryAI processes a given PDF URL to:
 1. Generate a summary
 2. Extract key sentences
 3. Highlight important content within the PDF viewer
+4. Chat with AI about the PDF
 
 ## Demos & Documentation
 
@@ -20,6 +21,7 @@ SummaryAI processes a given PDF URL to:
 - [x] Highlight cover letters
 - [x] Recalculate (x, y) coordinates in full-screen mode
 - [x] Improve summary prompting
+- [ ] Add Chat Features - Use LangChain
 - [ ] Support upload option for local PDF Files
 
 # Architecture
@@ -27,12 +29,13 @@ SummaryAI processes a given PDF URL to:
 ```bash
 project/
 ├── backend/               # Python 백엔드 코드 (FastAPI 등)
-│   ├── app/
-│   │   ├── __init__.py
-│   │   ├── main.py        # FastAPI 진입점
-│   │   ├── utils.py       # 공통 유틸리티 함수
-│   │   └── models.py      # 데이터 모델 정의
-│   ├── tests/             # 백엔드 테스트 코드
+│   ├── __init__.py
+│   ├── main.py            # FastAPI 진입점
+│   ├── utils.py           # 공통 유틸리티 함수
+│   └── models.py          # 데이터 모델 정의
+│   ├── routers/           # routers
+│   │   ├── pdf.py         # PDF DB & Prompting
+│   │   └── users.py       # Users DB
 │   └── requirements.txt   # Python 라이브러리 목록
 ├── frontend/              # Remix 프론트엔드 코드
 │   ├── app/
