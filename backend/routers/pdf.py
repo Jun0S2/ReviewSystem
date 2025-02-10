@@ -12,12 +12,15 @@ from utils import (
     extract_text_from_pdf,
     get_title,
     get_authors,
-    generate_summary_with_openai,
+    generate_summary_with_ollama,  # Ollama로 변경
     get_highlighted_sentences,
+    get_enhanced_answer_template
 )
+from langchain_ollama import ChatOllama  # Ollama로 변경
+from langchain_core.output_parsers import StrOutputParser
+from langchain.prompts import PromptTemplate
 
 router = APIRouter()
-
 
 # --- 데이터베이스 세션 의존성 ---
 def get_db():
@@ -26,7 +29,6 @@ def get_db():
         yield db
     finally:
         db.close()
-
 
 # --- Pydantic 모델: PDF 처리 요청 시, PDF URL과 사용자 이메일 포함 ---
 class ProcessPdfRequest(BaseModel):
@@ -42,7 +44,6 @@ class PdfInfoCreate(BaseModel):
     summary: str = None
     highlighted_sentences: list[str] = []
 
-
 class PdfInfoResponse(BaseModel):
     id: int
     pdf_url: str
@@ -54,16 +55,13 @@ class PdfInfoResponse(BaseModel):
     class Config:
         orm_mode = True
 
-
 # --- PDF DB 관련 엔드포인트 ---
-
 @router.get("/pdf/{pdf_id}", response_model=PdfInfoResponse, tags=["PDF DB"])
 def get_pdf_info(pdf_id: int, db: Session = Depends(get_db)):
     pdf = db.query(PdfInfo).filter(PdfInfo.id == pdf_id).first()
     if not pdf:
         raise HTTPException(status_code=404, detail="PDF not found")
     return pdf
-
 
 @router.post("/pdf", response_model=PdfInfoResponse, tags=["PDF DB"])
 def set_pdf_info(pdf: PdfInfoCreate, db: Session = Depends(get_db)):
@@ -82,14 +80,10 @@ def set_pdf_info(pdf: PdfInfoCreate, db: Session = Depends(get_db)):
     db.refresh(new_pdf)
     return new_pdf
 
-
 # --- PDF 처리 (요약 등) 관련 엔드포인트 ---
-
 class SummaryRequest(BaseModel):
     pdf_url: str
 
-
-# Test API 2: PDF URL과 사용자 이메일을 받아 처리하고, 사용자와의 연관 관계(UserPdf)를 추가
 @router.post("/process-pdf-with-user", response_model=PdfInfoResponse, tags=["PDF Processing"])
 async def process_pdf_with_user(request: ProcessPdfRequest, db: Session = Depends(get_db)):
     # 1. 들어오는 요청 데이터 로깅
@@ -130,15 +124,9 @@ async def process_pdf_with_user(request: ProcessPdfRequest, db: Session = Depend
             print("[DEBUG] Extracting authors...")
             authors = get_authors(full_text)
 
-            # OpenAI API 키 확인
-            api_key = os.getenv("OPENAI_API_KEY")
-            if not api_key:
-                print("[DEBUG] OpenAI API key is not set")
-                raise HTTPException(status_code=500, detail="OpenAI API key is not set.")
-
-            # 요약 생성
-            print("[DEBUG] Generating summary with OpenAI...")
-            summary = generate_summary_with_openai(full_text, api_key)
+            # 요약 생성 (Ollama로 변경)
+            print("[DEBUG] Generating summary with Ollama...")
+            summary = generate_summary_with_ollama(full_text)
 
             # 주요 문장 추출
             print("[DEBUG] Extracting highlighted sentences...")
@@ -178,53 +166,6 @@ async def process_pdf_with_user(request: ProcessPdfRequest, db: Session = Depend
     print(f"[DEBUG] Returning PDF info: {pdf_info.id}")
     return pdf_info
 
-@router.post("/process-pdf-test", tags=["PDF Processing"])
-async def process_pdf_test(request: SummaryRequest):
-    """
-    주어진 pdf_url을 받아 더미 데이터를 반환합니다.
-    """
-    pdf_url = request.pdf_url
-
-    dummy_response = {
-        "title": "Retrieval-Augmented Generation for",
-        "authors": ["both the generator and retriever are jointly learned."],
-        "summary": (
-            "The paper discusses Retrieval-Augmented Generation (RAG), a novel approach that integrates "
-            "parametric and non-parametric memory to enhance the performance of knowledge-intensive natural "
-            "language processing (NLP) tasks. Traditional large pre-trained language models, while effective, "
-            "struggle with accessing and manipulating factual knowledge, leading to limitations in performance on "
-            "specific tasks. RAG addresses this by combining a pre-trained sequence-to-sequence (seq2seq) model with "
-            "a retrieval mechanism that accesses a dense vector index of Wikipedia. This hybrid architecture allows "
-            "the model to generate more accurate and diverse responses in various tasks, significantly outperforming "
-            "both pure parametric models and specialized architectures in open-domain question answering, abstractive "
-            "text generation, and fact verification. The authors present two formulations of RAG: RAG-Sequence, which "
-            "uses the same retrieved passage for generating the entire output sequence, and RAG-Token, which can utilize "
-            "different passages for each token generated. The results showcase that RAG models achieve state-of-the-art "
-            "performance on multiple benchmarks, including open-domain QA tasks, and demonstrate the ability to produce "
-            "more factual and specific language outputs compared to traditional models. Additionally, RAG's retrieval "
-            "component can be easily updated with new information, making it adaptable to changes in knowledge over time. "
-            "Overall, RAG represents a significant advancement in the field of NLP, providing a powerful tool for tasks that "
-            "require extensive factual knowledge."
-        ),
-        "highlighted_sentences": [
-            (
-                "Retrieval-Augmented Generation for\nKnowledge-Intensive NLP Tasks\nPatrick Lewis†‡, Ethan Perez⋆,\n"
-                "Aleksandra Piktus†, Fabio Petroni†, Vladimir Karpukhin†, Naman Goyal†, Heinrich Küttler†,\n"
-                "Mike Lewis†, Wen-tau Yih†, Tim Rocktäschel†‡, Sebastian Riedel†‡, Douwe Kiela†\n"
-                "†Facebook AI Research;‡University College London;⋆New York University;\nplewis@fb.com\nAbstract\n"
-                "Large pre-trained language models have been shown to store factual knowledge\nin their parameters, and achieve "
-                "state-of-the-art results when ﬁne-tuned on down-\nstream NLP tasks."
-            ),
-            "However, their ability to access and precisely manipulate knowl-\nedge is still limited, and hence on knowledge-intensive tasks, their performance\nlags behind task-speciﬁc architectures.",
-            "Additionally, providing provenance for their\ndecisions and updating their world knowledge remain open research problems.",
-            "Pre-\ntrained models with a differentiable access mechanism to explicit non-parametric\nmemory have so far been only investigated for extractive downstream tasks.",
-            "We\nexplore a general-purpose ﬁne-tuning recipe for retrieval-augmented generation\n(RAG) — models which combine pre-trained parametric and non-parametric mem-\nory for language generation.",
-        ],
-        "pdf_url": pdf_url,
-    }
-    return dummy_response
-
-
 @router.post("/process-pdf", tags=["PDF Processing"])
 async def process_pdf(request: SummaryRequest):
     """
@@ -240,11 +181,8 @@ async def process_pdf(request: SummaryRequest):
         title = get_title(full_text)
         authors = get_authors(full_text)
 
-        api_key = os.getenv("OPENAI_API_KEY")
-        if not api_key:
-            raise HTTPException(status_code=500, detail="OpenAI API key is not set.")
-
-        summary = generate_summary_with_openai(full_text, api_key)
+        # 요약 생성 (Ollama로 변경)
+        summary = generate_summary_with_ollama(full_text)
         highlighted_sentences = get_highlighted_sentences(full_text)
 
         return {
@@ -256,3 +194,45 @@ async def process_pdf(request: SummaryRequest):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+class QARequest(BaseModel):
+    question: str
+    pdf_url: str  # PDF URL을 기반으로 질문
+
+@router.post("/ask-question")
+async def ask_question(request: QARequest):
+    try:
+        print(f"[Debug] Received question: {request.question}")
+        print(f"[Debug] PDF URL: {request.pdf_url}")
+
+        # 1. PDF 다운로드
+        pdf_path = "temp_paper.pdf"
+        print("[Debug] Attempting to download PDF...")
+        download_pdf(request.pdf_url, pdf_path)
+        print("[Debug] PDF downloaded successfully.")
+
+        # 2. PDF 검증
+        print("[Debug] Validating PDF...")
+        validate_pdf(pdf_path)
+        print("[Debug] PDF validation successful.")
+
+        # 3. 텍스트 추출
+        print("[Debug] Extracting text from PDF...")
+        full_text = extract_text_from_pdf(pdf_path)
+        print("[Debug] Text extracted successfully.")
+
+        # 4. 질문에 대한 답변 생성
+        answer_template = get_enhanced_answer_template()
+        answer_prompt_template = PromptTemplate(input_variables=['question', 'text'], template=answer_template)
+        llm = ChatOllama(model="llama3.2")
+
+        print("[Debug] Running AI model for answer generation...")
+        chain = answer_prompt_template | llm | StrOutputParser()
+        answer = chain.invoke(input={"question": request.question, "text": full_text})
+        print("[Debug] Answer generated:", answer)
+
+        return {"answer": answer}
+    
+    except Exception as e:
+        print(f"[Error] Exception occurred: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error answering question: {str(e)}")

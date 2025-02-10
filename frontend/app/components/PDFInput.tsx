@@ -24,6 +24,10 @@ const PDFInput: React.FC<PDFInputProps> = ({ onSubmit, layoutType = "inline", cl
           e.preventDefault();
           const formData = new FormData(e.target as HTMLFormElement);
           formData.append("color", selectedColor); // ✅ 색상 값 추가
+          const pdfUrl = formData.get("pdf_url") as string;
+          localStorage.setItem("pdf_url", pdfUrl);  // pdf url
+          // console.log("from locatl storgge: ");  // 로�� 스토리지에 pdf url 저장
+          // console.log(localStorage.getItem("pdf_url"));
           onSubmit(e);
         }}
         className="space-y-4"

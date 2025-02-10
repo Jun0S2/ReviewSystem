@@ -12,8 +12,9 @@ import {
   } from "@heroui/react";
   
   import { useState } from "react";
+  import { askQuestion } from "~/routes/api.qa-handler";
   import { MessageIcon } from "./icons/MessageIcon";
-  import QNAImage from "../../public/qna.png"
+  
   export default function App() {
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const [messages, setMessages] = useState([
@@ -21,21 +22,59 @@ import {
     ]);
     const [input, setInput] = useState("");
   
-    const handleSend = () => {
+    const handleSend = async () => {
       if (input.trim() !== "") {
         const newMessage = { sender: "user", text: input };
-        setMessages([...messages, newMessage]);
+        setMessages((prevMessages) => [...prevMessages, newMessage]);
         setInput("");
   
-        // Placeholder for bot response
-        setTimeout(() => {
+        try {
+          const pdf_url = localStorage.getItem("pdf_url");
+          if (!pdf_url) {
+            setMessages((prevMessages) => [
+              ...prevMessages,
+              { sender: "bot", text: "PDF URL이 없습니다. 먼저 PDF를 업로드해주세요." },
+            ]);
+            return;
+          }
+  
+          const response = await askQuestion({ question: input, pdf_url });
+  
+          if (response && response.answer) {
+            setMessages((prevMessages) => [
+              ...prevMessages,
+              { sender: "bot", text: `${response.answer}\n(${response.source ||''})` },
+            ]);
+          } else {
+            setMessages((prevMessages) => [
+              ...prevMessages,
+              { sender: "bot", text: "답변을 찾을 수 없습니다." },
+            ]);
+          }
+        } catch (error) {
+          console.error("Error fetching answer:", error);
           setMessages((prevMessages) => [
             ...prevMessages,
-            { sender: "bot", text: "입력하신 내용을 처리했습니다." }
+            { sender: "bot", text: "답변을 가져오는 데 실패했습니다." },
           ]);
-        }, 500);
+        }
       }
     };
+    // const handleSend = () => {
+    //   if (input.trim() !== "") {
+    //     const newMessage = { sender: "user", text: input };
+    //     setMessages([...messages, newMessage]);
+    //     setInput("");
+  
+    //     // Placeholder for bot response
+    //     setTimeout(() => {
+    //       setMessages((prevMessages) => [
+    //         ...prevMessages,
+    //         { sender: "bot", text: "입력하신 내용을 처리했습니다." }
+    //       ]);
+    //     }, 500);
+    //   }
+    // };
   
     return (
       <>
@@ -103,8 +142,7 @@ import {
                       alt="Question image"
                       className="aspect-square w-full hover:scale-110"
                       height={100}
-                      src={QNAImage}
-                       />
+                      src="/qna.png"                       />
                   </div>
                   <div className="flex flex-col gap-2 py-4">
                     <h1 className="text-2xl font-bold leading-7">Ask AI about this PDF</h1>
