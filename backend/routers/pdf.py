@@ -3,6 +3,8 @@ from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 import os
+import re
+
 
 from db import SessionLocal
 from models import PdfInfo, User, UserPdf  # User와 UserPdf를 추가로 import
@@ -230,6 +232,7 @@ async def ask_question(request: QARequest):
         chain = answer_prompt_template | llm | StrOutputParser()
         answer = chain.invoke(input={"question": request.question, "text": full_text})
         print("[Debug] Answer generated:", answer)
+        answer = re.sub(r'\(\s*\)', '', answer).strip()  # 빈 괄호 제거
 
         return {"answer": answer}
     

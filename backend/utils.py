@@ -60,15 +60,45 @@ def get_title(text: str):
         raise HTTPException(status_code=500, detail=f"Error extracting title: {str(e)}")
 
 def get_authors(text: str):
-    """Extracts the authors from the text based on patterns."""
+    """
+    Use Ollama to extract authors from the provided text, returning only the names in a clean format.
+    
+    :param text: Extracted text from the PDF.
+    :return: List of author names.
+    """
     try:
-        match = re.search(r"(By|Authors):?\s*(.+)", text, re.IGNORECASE)
-        if match:
-            authors = match.group(2).split(",")
-            return [author.strip() for author in authors]
-        return ["Unknown Author"]
+        # Ollama 모델 초기화
+        llm = ChatOllama(model="llama3.2")
+
+        # 저자 추출을 위한 프롬프트 (설명 없이 이름만 반환하도록 명확히 지시)
+        author_prompt_template = """
+        Extract only the authors' names from the academic paper text below.
+        Do NOT include any additional explanations, notes, or prefixes like "The authors are".
+        Return the names as a simple comma-separated list.
+
+        Text:
+        {text}
+
+        Output:
+        """
+
+        # 템플릿 적용
+        prompt = PromptTemplate(input_variables=['text'], template=author_prompt_template)
+        chain = prompt | llm | StrOutputParser()
+
+        # 논문 첫 페이지 텍스트만 전달 (처리 속도 최적화)
+        first_page_text = "\n".join(text.split("\n")[:50])  # 첫 50줄만 사용
+        authors_response = chain.invoke(input={"text": first_page_text})
+
+        # 후처리: 불필요한 문구 제거 및 쉼표로 분리
+        authors_response = re.sub(r"(The authors.*?:|Note:.*)", "", authors_response, flags=re.IGNORECASE).strip()
+        authors = [author.strip() for author in authors_response.split(",") if author.strip()]
+
+        return authors if authors else ["Unknown Author"]
+
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error extracting authors: {str(e)}")
+        print(f"Error extracting authors with Ollama: {e}")
+        raise HTTPException(status_code=500, detail=f"Error extracting authors: {e}")
 
 def get_highlighted_sentences(text: str):
     """Identifies important sentences from the text."""
@@ -153,8 +183,8 @@ def get_enhanced_answer_template():
 
         If the answer is NOT found in the text:
             - Clearly state: "The specific answer to your question was not found in the provided PDF."
-            - Provide a general explanation or definition of the term "{question}" based on your knowledge.
-            - If the term relates to a known field (e.g., mathematics, computer science), explain its relevance in that context.
+            - Provide a general explanation or definition of the term "{question}" based on your knowledge."
+            - If relevant, explain its significance in related fields.
 
-        Ensure your answer is easy to understand and well-structured.
+        Ensure your answer is easy to understand and well-structured without unnecessary formatting.
     """
