@@ -36,9 +36,30 @@ INFO: 127.0.0.1:53442 - "POST /process-pdf HTTP/1.1" 200 OK
 
 author 와 title 을 제대로 못가져 오고 있음.
 
-## LangChain
+# LangChain
 
-답변 능력 최악,,
+```
+prompt = PromptTemplate(input_variables=['text'], template=author_prompt_template)
+chain = prompt | llm | StrOutputParser()
+authors_response = chain.invoke(input={"text": first_page_text})
+```
+
+- PromptTemplate: 입력 데이터를 기반으로 동적인 프롬프트 생성.
+- ChatOllama: LLM 호출 (Ollama 모델을 사용).
+- StrOutputParser: 모델의 출력을 파싱해서 문자열로 변환.
+
+## LangChain 적용
+
+- 저자 추출 (get_authors): LangChain을 통해 Ollama에게 저자 목록만 반환하도록 요청.
+- 요약 생성 (generate_summary_with_ollama): 논문 내용을 요약하는 데 LangChain 체인을 사용.
+- 질문 응답 시스템 (get_enhanced_answer_template): 논문 내용을 기반으로 질문에 답변하는 데 사용.
+
+### 프롬프트 수정을 통해 답변 능력 향상
+
+<details>
+  <summary>Before</summary>
+
+### Template
 
 ```
  """
@@ -62,7 +83,7 @@ author 와 title 을 제대로 못가져 오고 있음.
     """
 ```
 
-answer
+### Result
 
 ```
 [Debug] Received question: product structure 가 뭐야?
@@ -82,7 +103,11 @@ Also, please note that the text appears to be a collection of research papers or
 INFO:     127.0.0.1:62947 - "POST /ask-question HTTP/1.1" 200 OK
 ```
 
-template 수정
+</details>
+<details>
+  <summary>After</summary>
+  
+### template 수정
 
 ```
 def get_enhanced_answer_template():
@@ -108,7 +133,7 @@ def get_enhanced_answer_template():
 
 ```
 
-결과
+### Result
 
 ```
  Running AI model for answer generation...
@@ -130,3 +155,190 @@ In other contexts, such as computer science or mathematics, the term "product st
 INFO:     127.0.0.1:64010 - "POST /ask-question HTTP/1.1" 200 OK
 
 ```
+
+</details>
+
+---
+
+# 모델 경량화, 병렬 처리, 부분 fine-tuning(PEFT) 등 적용
+
+## 양자화(Quantization)
+
+모델의 파라미터를 16-bit 또는 8-bit로 줄여 메모리 사용량을 감소시키고, 추론 속도를 향상
+
+## PEFT (Parameter-Efficient Fine-Tuning)
+
+LoRA(Low-Rank Adaptation) 기법을 활용해 모델의 일부 파라미터만 업데이트하거나, 작은 어댑터 모듈을 추가하여 효율적으로 파인튜닝함
+
+### Install
+
+```
+pip install bitsandbytes accelerate peft transformers
+```
+
+<details>
+<summary>1. 경량화 적용 </summary>
+
+```
+# utils.py
+from transformers import AutoModelForCausalLM, AutoTokenizer
+from peft import LoraConfig, get_peft_model
+import torch
+
+# Ollama 모델 초기화 - 경량화 적용
+
+def initialize_quantized_ollama_model():
+model_name = "meta-llama/Llama-2-7b-hf" # 사용할 LLM 모델
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+
+    # 4-bit 양자화 적용하여 모델 로드
+    model = AutoModelForCausalLM.from_pretrained(
+        model_name,
+        load_in_4bit=True,
+        device_map="auto"
+    )
+
+    return model, tokenizer
+
+# LangChain을 위한 경량화된 모델 초기화
+
+def get_quantized_llm():
+from langchain.llms import HuggingFacePipeline
+from transformers import pipeline
+
+    model, tokenizer = initialize_quantized_ollama_model()
+
+    # 텍스트 생성 파이프라인 설정
+    quantized_pipeline = pipeline("text-generation", model=model, tokenizer=tokenizer)
+    llm = HuggingFacePipeline(pipeline=quantized_pipeline)
+
+    return llm
+
+# generate summary 수정
+
+def generate_summary_with_ollama(text: str):
+    """
+    Generates a summary using a quantized Ollama model.
+    """
+    try:
+        # 양자화된 Ollama 모델 초기화
+        llm = get_quantized_llm()
+
+        # 요약을 위한 프롬프트 템플릿
+        summary_template = """
+            You are a helpful assistant summarizing text documents.
+            Summarize the following text in 1-2 paragraphs, focusing on the key points and main ideas:
+
+            {text}
+        """
+        summary_prompt_template = PromptTemplate(input_variables=['text'], template=summary_template)
+
+        # 체인 실행
+        chain = summary_prompt_template | llm | StrOutputParser()
+        summary = chain.invoke(input={"text": text})
+
+        return summary.strip()
+    except Exception as e:
+        print(f"Error generating summary with quantized Ollama: {e}")
+        raise HTTPException(status_code=500, detail=f"Error generating summary: {e}")
+
+```
+
+</details>
+
+<details>
+<summary>2.  PEFT (LoRA 기반 부분 파인튜닝)</summary>
+
+```
+from peft import LoraConfig, get_peft_model
+
+def apply_lora_to_model(model):
+    """
+    Applies LoRA to the quantized model for efficient fine-tuning.
+    """
+    config = LoraConfig(
+        r=8,
+        lora_alpha=32,
+        target_modules=["q_proj", "v_proj"],  # Transformer Layer 중 일부만 파인튜닝
+        lora_dropout=0.05,
+        bias="none",
+        task_type="CAUSAL_LM"
+    )
+
+    lora_model = get_peft_model(model, config)
+    return lora_model
+```
+
+lora model -> Langchain
+
+```
+def get_quantized_lora_llm():
+    from langchain.llms import HuggingFacePipeline
+    from transformers import pipeline
+
+    # 모델 초기화 및 LoRA 적용
+    model, tokenizer = initialize_quantized_ollama_model()
+    lora_model = apply_lora_to_model(model)
+
+    # 텍스트 생성 파이프라인 설정
+    lora_pipeline = pipeline("text-generation", model=lora_model, tokenizer=tokenizer)
+    llm = HuggingFacePipeline(pipeline=lora_pipeline)
+
+    return llm
+```
+
+pdf.py 에 적용
+
+```
+from utils import get_quantized_llm
+
+# Ollama 모델 초기화 부분 수정
+llm = get_quantized_llm()
+
+# 요약 생성 (경량화된 Ollama로 변경)
+@router.post("/process-pdf", tags=["PDF Processing"])
+async def process_pdf(request: SummaryRequest):
+    """
+    PDF URL을 받아 파일 다운로드 → 검증 → 텍스트 추출 → 제목, 저자, 요약, 주요 문장을 반환합니다.
+    """
+    pdf_url = request.pdf_url
+    pdf_path = "paper.pdf"
+
+    try:
+        download_pdf(pdf_url, pdf_path)
+        validate_pdf(pdf_path)
+        full_text = extract_text_from_pdf(pdf_path)
+        title = get_title(full_text)
+        authors = get_authors(full_text)
+
+        # 경량화된 모델로 요약 생성
+        summary = generate_summary_with_ollama(full_text)
+        highlighted_sentences = get_highlighted_sentences(full_text)
+
+        return {
+            "title": title,
+            "authors": authors,
+            "summary": summary,
+            "highlighted_sentences": highlighted_sentences,
+            "pdf_url": pdf_url,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+```
+
+</details>
+
+### Hugging Face
+
+- 모델 다운로드 및 관리
+- Hugging Face는 다양한 `사전 학습된 모델(pre-trained models)`을 손쉽게 다운로드하고 사용할 수 있는 중앙 저장소 역할
+- 예: meta-llama/Llama-2-7b-hf, gpt2, bert-base-uncased 등.
+
+#### 경량화 및 파인튜닝 기능 제공
+
+우리가 사용한 transformers 라이브러리는 Hugging Face에서 제공하는 것으로, `양자화(Quantization)`와 LoRA(부분 파인튜닝) 같은 고급 기능을 지원
+
+#### LangChain과의 통합
+
+FastAPI에서 문서 요약 및 질문 응답 시스템을 구현하면서, LangChain 라이브러리로 LLM(대형 언어 모델)을 활용했는데, 이 과정에서도 Hugging Face 모델들이 필수적으로 활용

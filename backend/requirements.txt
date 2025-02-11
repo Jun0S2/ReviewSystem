@@ -35,3 +35,11 @@ email-validator
 langchain
 # google-search-results
 langchain-ollama
+# 경량화
+bitsandbytes 
+accelerate 
+peft 
+transformers
+ninja
+cmake
+torch

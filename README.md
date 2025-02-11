@@ -16,6 +16,14 @@ SummaryAI processes a given PDF URL to:
 > Due to financial constraints, the OpenAI token has been temporarily disconnected.  
 > However, a demo video is available at the link above.
 
+## .env Setup
+
+| **환경**             | **사용 가능한 모델**          | **테스트 코드**                                                              |
+| -------------------- | ----------------------------- | ---------------------------------------------------------------------------- |
+| **NVCC 지원**        | LoRA + 양자화, 양자화, Ollama | `get_quantized_llm()`, `initialize_quantized_ollama_model()`, `ChatOllama()` |
+| **NVCC 미지원**      | LoRA, Ollama                  | `get_lora_llm()`, `ChatOllama()`                                             |
+| **Ollama만 사용 시** | Ollama                        | `ChatOllama(model="llama3.2")`                                               |
+
 ## Upcoming Updates
 
 - [x] Highlight cover letters
@@ -85,6 +93,9 @@ Remix 기반의 프론트엔드 애플리케이션을 관리합니다.
 - Tried using Hugging face but it kept failing due to hw limitations
 - gpt 4o mini
 
+<details>
+<summary> Result </summary>
+
 ```
 Downloading PDF...
 PDF successfully downloaded: paper.pdf
@@ -98,10 +109,13 @@ Generated 35 chunks for processing.
 Generated summary: The paper discusses the development and evaluation of Retrieval-Augmented Generation (RAG) models for knowledge-intensive NLP tasks. RAG models combine pre-trained parametric memory, typically from sequence-to-sequence (seq2seq) models, with non-parametric memory accessed through a retriever. This hybrid approach aims to address limitations of traditional large pre-trained language models, such as their inability to effectively access and update factual knowledge. The authors present two formulations of RAG: RAG-Sequence, which uses the same retrieved document for generating an entire sequence, and RAG-Token, which allows for different documents to influence each output token. The models were fine-tuned and evaluated on a variety of tasks, including open-domain question answering and language generation, demonstrating state-of-the-art performance on several benchmarks and outperforming traditional parametric models.
 
 RAG's architecture enables it to generate more factual, specific, and diverse outputs compared to baseline models. The paper also highlights the model's ability to update its knowledge dynamically by swapping its non-parametric memory, enhancing its adaptability to changing information over time. The results emphasize the effectiveness of combining parametric and non-parametric approaches in NLP, suggesting new avenues for research into how these memory types can be integrated for improved performance across various tasks.
-INFO:     127.0.0.1:53148 - "POST /generate-summary HTTP/1.1" 200 OK
-^CINFO:     Shutting down
-INFO:     Waiting for application shutdown.
-INFO:     Application shutdown complete.
-INFO:     Finished server process [97858]
-INFO:     Stopping reloader process [96771]
+INFO: 127.0.0.1:53148 - "POST /generate-summary HTTP/1.1" 200 OK
+^CINFO: Shutting down
+INFO: Waiting for application shutdown.
+INFO: Application shutdown complete.
+INFO: Finished server process [97858]
+INFO: Stopping reloader process [96771]
+
 ```
+
+</details>

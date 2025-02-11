@@ -4,8 +4,6 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 import os
 import re
-
-
 from db import SessionLocal
 from models import PdfInfo, User, UserPdf  # User와 UserPdf를 추가로 import
 from utils import (
@@ -14,13 +12,16 @@ from utils import (
     extract_text_from_pdf,
     get_title,
     get_authors,
-    generate_summary_with_ollama,  # Ollama로 변경
+    generate_summary,  # .env 에서 설정
     get_highlighted_sentences,
-    get_enhanced_answer_template
+    get_enhanced_answer_template,
+    get_lora_llm,
+    initialize_model  # 공통 모델 초기화 함수 가져오기
 )
-from langchain_ollama import ChatOllama  # Ollama로 변경
+# from langchain_ollama import ChatOllama  # Ollama로 변경 -> 경량화모델로 직접 호출
 from langchain_core.output_parsers import StrOutputParser
 from langchain.prompts import PromptTemplate
+from utils import llm, get_quantized_llm  # 경량화된 모델 가져오기
 
 router = APIRouter()
 
@@ -127,8 +128,8 @@ async def process_pdf_with_user(request: ProcessPdfRequest, db: Session = Depend
             authors = get_authors(full_text)
 
             # 요약 생성 (Ollama로 변경)
-            print("[DEBUG] Generating summary with Ollama...")
-            summary = generate_summary_with_ollama(full_text)
+            print("[DEBUG] Generating summary ...")
+            summary = generate_summary(full_text) # model runtime에 결정됨
 
             # 주요 문장 추출
             print("[DEBUG] Extracting highlighted sentences...")
@@ -168,35 +169,6 @@ async def process_pdf_with_user(request: ProcessPdfRequest, db: Session = Depend
     print(f"[DEBUG] Returning PDF info: {pdf_info.id}")
     return pdf_info
 
-@router.post("/process-pdf", tags=["PDF Processing"])
-async def process_pdf(request: SummaryRequest):
-    """
-    PDF URL을 받아 파일 다운로드 → 검증 → 텍스트 추출 → 제목, 저자, 요약, 주요 문장을 반환합니다.
-    """
-    pdf_url = request.pdf_url
-    pdf_path = "paper.pdf"
-
-    try:
-        download_pdf(pdf_url, pdf_path)
-        validate_pdf(pdf_path)
-        full_text = extract_text_from_pdf(pdf_path)
-        title = get_title(full_text)
-        authors = get_authors(full_text)
-
-        # 요약 생성 (Ollama로 변경)
-        summary = generate_summary_with_ollama(full_text)
-        highlighted_sentences = get_highlighted_sentences(full_text)
-
-        return {
-            "title": title,
-            "authors": authors,
-            "summary": summary,
-            "highlighted_sentences": highlighted_sentences,
-            "pdf_url": pdf_url,
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
 class QARequest(BaseModel):
     question: str
     pdf_url: str  # PDF URL을 기반으로 질문
@@ -226,15 +198,13 @@ async def ask_question(request: QARequest):
         # 4. 질문에 대한 답변 생성
         answer_template = get_enhanced_answer_template()
         answer_prompt_template = PromptTemplate(input_variables=['question', 'text'], template=answer_template)
-        llm = ChatOllama(model="llama3.2")
 
-        print("[Debug] Running AI model for answer generation...")
+        # 전역으로 초기화된 llm 사용
         chain = answer_prompt_template | llm | StrOutputParser()
         answer = chain.invoke(input={"question": request.question, "text": full_text})
-        print("[Debug] Answer generated:", answer)
-        answer = re.sub(r'\(\s*\)', '', answer).strip()  # 빈 괄호 제거
-
-        return {"answer": answer}
+        
+        print("[DEBUG] Answer generated:", answer)
+        return {"answer": answer.strip()}
     
     except Exception as e:
         print(f"[Error] Exception occurred: {str(e)}")

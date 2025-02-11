@@ -1,8 +1,7 @@
-<<<<<<< HEAD
-=======
 node_modules
-
 /.cache
-/build
->>>>>>> origin/master
+frontend/build/
+backend/venv/
+backend/.venv
 .env
+venv/
