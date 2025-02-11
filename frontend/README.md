@@ -46,6 +46,30 @@ Remix 기반의 프론트엔드 애플리케이션을 관리합니다.
 - `utils/`: 프론트엔드 유틸리티 함수 (예: Python 서버 호출 함수).
 - nextui-> heroui 사용
 
+# Chatbot
+
+Paper 의 term을 검색했을 때, paper에서 나오지 않는다면 이를 명시하고 따로 찾아오도록 명령
+
+```
+[Debug] Received question: what is cyst in this paper?
+[Debug] PDF URL: https://arxiv.org/pdf/2502.04367
+[Debug] Attempting to download PDF...
+[Debug] PDF downloaded successfully.
+[Debug] Validating PDF...
+[Debug] PDF validation successful.
+[Debug] Extracting text from PDF...
+[Debug] Text extracted successfully.
+[Debug] Running AI model for answer generation...
+[Debug] Answer generated: The specific question from the prompt was not found in the provided PDF. However, based on the content of the paper, it appears that the authors are discussing various approaches for detecting kidney stones using computed tomography (CT) images.
+
+In this context, a "cyst" is likely being referred to as a renal cyst or a hydronephrosis, which is a condition where the kidney swells due to the accumulation of urine. In the field of radiology and urology, cysts and hydronephrosis are common findings that can be detected using CT scans.
+
+A renal cyst is a fluid-filled sac in the kidney, while hydronephrosis refers to the swelling of a kidney due to a blockage in the urinary tract. Both conditions can cause symptoms such as abdominal pain, nausea, and vomiting, and may require medical attention if left untreated.
+
+In the context of the paper, the authors are exploring different machine learning models and techniques for detecting these conditions in CT images, with the goal of improving diagnosis accuracy and developing more effective treatment strategies for kidney stone patients.
+INFO:     127.0.0.1:49930 - "POST /ask-question HTTP/1.1" 200 OK
+```
+
 version 0.1
 
 - openai : 0.28.0

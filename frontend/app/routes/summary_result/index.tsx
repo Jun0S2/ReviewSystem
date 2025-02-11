@@ -7,6 +7,8 @@ import ChatComponent from "~/components/ChatComponent";
 import { FileIcon } from "~/components/icons/FileIcon";
 import { ExpandIcon } from "~/components/icons/ExpandIcon";
 import {CollapseIcon} from "~/components/icons/CollapseIcon";
+import ReactMarkdown from 'react-markdown';
+
 import { useState } from "react";
 export default function SummaryResultPage() {
 /**
@@ -130,7 +132,9 @@ export default function SummaryResultPage() {
 
             <Divider />
                 <div className="text-lg font-bold py-5">Summary</div>
-                <div className="text-md">{summary || "No summary available."}</div>
+                <div className="text-md">
+                  <ReactMarkdown>{summary || "No summary available."}</ReactMarkdown>                  
+                </div>
 
                 <div className="text-lg font-bold py-5">Highlighted Sentences</div>
                 <div className="text-md text-gray-500">
