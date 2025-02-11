@@ -21,7 +21,7 @@ SummaryAI processes a given PDF URL to:
 - [x] Highlight cover letters
 - [x] Recalculate (x, y) coordinates in full-screen mode
 - [x] Improve summary prompting
-- [ ] Add Chat Features - Use LangChain
+- [x] Add Chat Features - Use LangChain
 - [ ] Support upload option for local PDF Files
 
 # Architecture
@@ -73,7 +73,13 @@ Remix 기반의 프론트엔드 애플리케이션을 관리합니다.
 - `utils/`: 프론트엔드 유틸리티 함수 (예: Python 서버 호출 함수).
 - nextui-> heroui 사용
 
-version 0.1
+### latest version Release note
+
+- Use ollama
+- LangChain
+- Support Chatbot
+
+### version 0.1
 
 - openai : 0.28.0
 - Tried using Hugging face but it kept failing due to hw limitations
