@@ -29,12 +29,16 @@ http://127.0.0.1:8000/docs
 - uvicorn
 - pydantic
 
-version1.1
+
+<details>
+<summary>As Is</summary>
 INFO: Application startup complete.
 {'summary': "The paper discusses Retrieval-Augmented Generation (RAG), a novel approach that integrates parametric and non-parametric memory to enhance the performance of knowledge-intensive natural language processing (NLP) tasks. Traditional large pre-trained language models, while effective, struggle with accessing and manipulating factual knowledge, leading to limitations in performance on specific tasks. RAG addresses this by combining a pre-trained sequence-to-sequence (seq2seq) model with a retrieval mechanism that accesses a dense vector index of Wikipedia. This hybrid architecture allows the model to generate more accurate and diverse responses in various tasks, significantly outperforming both pure parametric models and specialized architectures in open-domain question answering, abstractive text generation, and fact verification.\n\nThe authors present two formulations of RAG: RAG-Sequence, which uses the same retrieved passage for generating the entire output sequence, and RAG-Token, which can utilize different passages for each token generated. The results showcase that RAG models achieve state-of-the-art performance on multiple benchmarks, including open-domain QA tasks, and demonstrate the ability to produce more factual and specific language outputs compared to traditional models. Additionally, RAG's retrieval component can be easily updated with new information, making it adaptable to changes in knowledge over time. Overall, RAG represents a significant advancement in the field of NLP, providing a powerful tool for tasks that require extensive factual knowledge.", 'highlighted_sentences': ['Retrieval-Augmented Generation for\nKnowledge-Intensive NLP Tasks\nPatrick Lewis†‡, Ethan Perez⋆,\nAleksandra Piktus†, Fabio Petroni†, Vladimir Karpukhin†, Naman Goyal†, Heinrich Küttler†,\nMike Lewis†, Wen-tau Yih†, Tim Rocktäschel†‡, Sebastian Riedel†‡, Douwe Kiela†\n†Facebook AI Research;‡University College London;⋆New York University;\nplewis@fb.com\nAbstract\nLarge pre-trained language models have been shown to store factual knowledge\nin their parameters, and achieve state-of-the-art results when ﬁne-tuned on down-\nstream NLP tasks.', 'However, their ability to access and precisely manipulate knowl-\nedge is still limited, and hence on knowledge-intensive tasks, their performance\nlags behind task-speciﬁc architectures.', 'Additionally, providing provenance for their\ndecisions and updating their world knowledge remain open research problems.', 'Pre-\ntrained models with a differentiable access mechanism to explicit non-parametric\nmemory have so far been only investigated for extractive downstream tasks.', 'We\nexplore a general-purpose ﬁne-tuning recipe for retrieval-augmented generation\n(RAG) — models which combine pre-trained parametric and non-parametric mem-\nory for language generation.'], 'title': 'Retrieval-Augmented Generation for', 'authors': ['both the generator and retriever are jointly learned.']}
 INFO: 127.0.0.1:53442 - "POST /process-pdf HTTP/1.1" 200 OK
 
-author 와 title 을 제대로 못가져 오고 있음.
+-> author 와 title 을 제대로 못가져 오고 있음.
+-> 최근 버전에서는 prompting 을 통해 개선 완료함.
+</details>
 
 # LangChain
 
@@ -173,7 +177,10 @@ LoRA(Low-Rank Adaptation) 기법을 활용해 모델의 일부 파라미터만 �
 ### Install
 
 ```
-pip install bitsandbytes accelerate peft transformers
+pip install accelerate peft transformers
+
+pip install torch==2.1.0+cu121 torchvision==0.16.0+cu121 torchaudio==2.1.0+cu121 -f https://download.pytorch.org/whl/torch_stable.html
+
 ```
 
 <details>
@@ -342,3 +349,98 @@ async def process_pdf(request: SummaryRequest):
 #### LangChain과의 통합
 
 FastAPI에서 문서 요약 및 질문 응답 시스템을 구현하면서, LangChain 라이브러리로 LLM(대형 언어 모델)을 활용했는데, 이 과정에서도 Hugging Face 모델들이 필수적으로 활용
+
+
+# GPU
+## AS IS
+ author retrieving 이 15분 정도 걸리고, summary 도 생성 못함.
+<details>
+C:\Users\hp000>nvidia-smi
+Tue Feb 11 20:50:15 2025
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 571.96                 Driver Version: 571.96         CUDA Version: 12.8     |
+|-----------------------------------------+------------------------+----------------------+
+| GPU  Name                  Driver-Model | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA GeForce RTX 3060      WDDM  |   00000000:2B:00.0  On |                  N/A |
+|  0%   38C    P8             24W /  170W |     635MiB /  12288MiB |      2%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|    0   N/A  N/A            3600    C+G   ...t\Edge\Application\msedge.exe      N/A      |
+|    0   N/A  N/A            5796    C+G   ...ntrolPanel\SystemSettings.exe      N/A      |
+|    0   N/A  N/A            6164    C+G   C:\Windows\explorer.exe               N/A      |
+|    0   N/A  N/A            7308    C+G   ...8bbwe\PhoneExperienceHost.exe      N/A      |
+|    0   N/A  N/A            8036    C+G   ...crosoft OneDrive\OneDrive.exe      N/A      |
+|    0   N/A  N/A            8112    C+G   ..._cw5n1h2txyewy\SearchHost.exe      N/A      |
+|    0   N/A  N/A            8136    C+G   ...y\StartMenuExperienceHost.exe      N/A      |
+|    0   N/A  N/A           11072    C+G   ...cord\app-1.0.9181\Discord.exe      N/A      |
+|    0   N/A  N/A           11568    C+G   ...5n1h2txyewy\TextInputHost.exe      N/A      |
+|    0   N/A  N/A           12116    C+G   ...__8wekyb3d8bbwe\HxOutlook.exe      N/A      |
+|    0   N/A  N/A           12740    C+G   ...ms\Microsoft VS Code\Code.exe      N/A      |
+|    0   N/A  N/A           14968    C+G   ...4__8wekyb3d8bbwe\ms-teams.exe      N/A      |
+|    0   N/A  N/A           15412    C+G   ...0.2957.140\msedgewebview2.exe      N/A      |
+|    0   N/A  N/A           16332    C+G   ...xyewy\ShellExperienceHost.exe      N/A      |
+|    0   N/A  N/A           17236    C+G   ...4__8wekyb3d8bbwe\ms-teams.exe      N/A      |
+|    0   N/A  N/A           18836    C+G   ...4__8wekyb3d8bbwe\ms-teams.exe      N/A      |
+|    0   N/A  N/A           19432    C+G   ...yb3d8bbwe\WindowsTerminal.exe      N/A      |
+|    0   N/A  N/A           19452    C+G   ...Chrome\Application\chrome.exe      N/A      |
+|    0   N/A  N/A           19756    C+G   ...0.2957.140\msedgewebview2.exe      N/A      |
+|    0   N/A  N/A           21064    C+G   ...Chrome\Application\chrome.exe      N/A      |
++-----------------------------------------------------------------------------------------+
+</details>
+
+## TO BE
+속도가 확실히 빨라짐
+기존 : author retrieving 이 15분 -> 30초 정도로 줄어들음
+
+<details>
+C:\Users\hp000>nvidia-smi
+Tue Feb 11 21:21:28 2025
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 571.96                 Driver Version: 571.96         CUDA Version: 12.8     |
+|-----------------------------------------+------------------------+----------------------+
+| GPU  Name                  Driver-Model | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA GeForce RTX 3060      WDDM  |   00000000:2B:00.0  On |                  N/A |
+|  0%   52C    P2             75W /  170W |   11950MiB /  12288MiB |     97%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|    0   N/A  N/A            3600    C+G   ...t\Edge\Application\msedge.exe      N/A      |
+|    0   N/A  N/A            5796    C+G   ...ntrolPanel\SystemSettings.exe      N/A      |
+|    0   N/A  N/A            6164    C+G   C:\Windows\explorer.exe               N/A      |
+|    0   N/A  N/A            7308    C+G   ...8bbwe\PhoneExperienceHost.exe      N/A      |
+|    0   N/A  N/A            8036    C+G   ...crosoft OneDrive\OneDrive.exe      N/A      |
+|    0   N/A  N/A            8112    C+G   ..._cw5n1h2txyewy\SearchHost.exe      N/A      |
+|    0   N/A  N/A            8136    C+G   ...y\StartMenuExperienceHost.exe      N/A      |
+|    0   N/A  N/A           11072    C+G   ...cord\app-1.0.9181\Discord.exe      N/A      |
+|    0   N/A  N/A           11568    C+G   ...5n1h2txyewy\TextInputHost.exe      N/A      |
+|    0   N/A  N/A           12116    C+G   ...__8wekyb3d8bbwe\HxOutlook.exe      N/A      |
+|    0   N/A  N/A           12740    C+G   ...ms\Microsoft VS Code\Code.exe      N/A      |
+|    0   N/A  N/A           14968    C+G   ...4__8wekyb3d8bbwe\ms-teams.exe      N/A      |
+|    0   N/A  N/A           15412    C+G   ...0.2957.140\msedgewebview2.exe      N/A      |
+|    0   N/A  N/A           16332    C+G   ...xyewy\ShellExperienceHost.exe      N/A      |
+|    0   N/A  N/A           17236    C+G   ...4__8wekyb3d8bbwe\ms-teams.exe      N/A      |
+|    0   N/A  N/A           18464      C   ...s\Python\Python311\python.exe      N/A      |
+|    0   N/A  N/A           18836    C+G   ...4__8wekyb3d8bbwe\ms-teams.exe      N/A      |
+|    0   N/A  N/A           19432    C+G   ...yb3d8bbwe\WindowsTerminal.exe      N/A      |
+|    0   N/A  N/A           19452    C+G   ...Chrome\Application\chrome.exe      N/A      |
+|    0   N/A  N/A           19756    C+G   ...0.2957.140\msedgewebview2.exe      N/A      |
+|    0   N/A  N/A           21064    C+G   ...Chrome\Application\chrome.exe      N/A      |
++-----------------------------------------------------------------------------------------+
+</details>
