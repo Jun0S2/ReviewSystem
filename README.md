@@ -1,5 +1,11 @@
 # Documents
 
+
+LoRA & Quatization implemented on : 
+
+[Optimization Branch](https://github.com/Jun0S2/ReviewSystem/tree/feature/speed-optimization)
+
+
 ## SummaryAI Overview
 
 SummaryAI processes a given PDF URL to:
@@ -75,9 +81,10 @@ Remix 기반의 프론트엔드 애플리케이션을 관리합니다.
 
 ### latest version Release note
 
-- Use ollama
-- LangChain
-- Support Chatbot
+- `main` : Use ollama
+- `main` : LangChain
+- `main` : Support Chatbot
+- `feature/speed-optimzation` branch: quantization and loRA implemented 
 
 ### version 0.1
 
@@ -86,6 +93,9 @@ Remix 기반의 프론트엔드 애플리케이션을 관리합니다.
 - gpt 4o mini
 
 ```
+
+<details>
+
 Downloading PDF...
 PDF successfully downloaded: paper.pdf
 Validating PDF...
@@ -105,3 +115,4 @@ INFO:     Application shutdown complete.
 INFO:     Finished server process [97858]
 INFO:     Stopping reloader process [96771]
 ```
+</details>
