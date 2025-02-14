@@ -22,16 +22,12 @@ project/
 ├── README.md              # 프로젝트 설명서
 └── .gitignore             # Git 무시 파일
 ```
-
-## Backend
-
-주요 파일:
-
-- `main.py`: FastAPI 애플리케이션의 진입점. API 엔드포인트를 정의합니다.
-- `models.py`: 데이터 모델 정의 (예: Pydantic 모델).
-- `utils.py`: 재사용 가능한 유틸리티 함수 (예: 텍스트 추출 함수).
-- `requirements.txt`: FastAPI, Transformers, PyPDF2 등 설치할 라이브러리 목록.
-- `Dockerfile`: 선택적으로 Docker로 백엔드를 배포할 때 사용합니다.
+# Installation
+```
+npm install
+npm run bulid
+npm run dev
+```
 
 ## frontend
 

@@ -1,45 +1,55 @@
-# FastAPI framework for building APIs
-fastapi
+# ==============================
+# Core Frameworks & Servers
+# ==============================
+fastapi                         # FastAPI framework for building APIs
+uvicorn==0.22.0                 # ASGI server to serve FastAPI apps
 
-# ASGI server to serve FastAPI apps
-uvicorn==0.22.0
+# ==============================
+# Environment & Configuration
+# ==============================
+python-dotenv==1.0.0            # Load environment variables from .env files
 
-# PDF handling library
-pypdf==3.15.2
+# ==============================
+# HTTP & API Clients
+# ==============================
+requests==2.32.0                # HTTP client for making requests
+openai==0.28.0                  # OpenAI API library (pinned for compatibility)
 
-# HTTP client for Python
-requests==2.32.0
+# ==============================
+# PDF & File Handling
+# ==============================
+pypdf==3.15.2                   # PDF handling library
 
-# OpenAI Python library (pinned to 0.28.0 due to compatibility)
-openai==0.28.0
+# ==============================
+# Data Validation & ORM
+# ==============================
+pydantic==2.10.6                # Data validation and settings management
+SQLAlchemy==1.4.46              # SQL toolkit and ORM for database interactions
+psycopg2-binary==2.9.6          # PostgreSQL database adapter
+email-validator                 # Validate, parse, and format email addresses
 
-# Python library to load environment variables from .env files
-python-dotenv==1.0.0
+# ==============================
+# Machine Learning & AI
+# ==============================
+torch==2.1.0+cu121              # PyTorch with CUDA 12.1 (compatible with CUDA 12.8)
+langchain                       # Framework for building applications with LLMs
+langchain-ollama                # LangChain integration for Ollama models
+# bitsandbytes                    # 8-bit optimizers and quantization
+accelerate                      # Fast, distributed training of models
+peft                            # Parameter-efficient fine-tuning for transformers
+transformers                    # Hugging Face's state-of-the-art NLP library
+ninja                           # Build system used for compiling optimized code
+cmake                           # Cross-platform build system for compiling C/C++ extensions
 
-# Progress bar for CLI operations
-tqdm==4.66.1
+# ==============================
+# CLI & Utility Tools
+# ==============================
+tqdm==4.66.1                    # Fast, extensible progress bar for CLI
+pytest==7.4.2                   # Testing framework for Python
 
-# Optional: If you use testing
-pytest==7.4.2
+# ==============================
+# Optional Integrations (Uncomment if needed)
+# ==============================
+# google-search-results         # Google search API (uncomment if needed)
 
-pydantic==2.10.6
-SQLAlchemy==1.4.46
-psycopg2-binary==2.9.6
-email-validator
-
-# pyenv global 3.11.5
-# pyenv local 3.11.5
-# exec "$SHELL"
-# python --version
-# python -m uvicorn main:app --reload
-langchain
-# google-search-results
-langchain-ollama
-# 경량화
-bitsandbytes 
-accelerate 
-peft 
-transformers
-ninja
-cmake
-torch
+# uvicorn main:app --reload
